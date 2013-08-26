@@ -1,0 +1,80 @@
+#recrun-close {
+	font: bold 20px sans-serif;
+	padding-left: 6px;
+	padding-right: 6px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	position: absolute;
+	left: 0px;
+    top: 0px;
+	color: gray;
+	cursor: pointer;
+	display: inline-block;
+	text-align: center;
+	text-decoration: none;
+}
+
+#recrun-container {
+	font-family: georgia, 'times new roman', times, serif;
+	width: 600px;
+	margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+#recrun-loader {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#recrun-title {
+	text-align: left;
+	display: block;
+	font-size: 28px;
+	line-height: 33px;
+	margin-bottom: 13px;
+}
+
+#recrun-author, #recrun-date {
+	text-align: left;
+	display: block;
+	font-size: 14px;
+	color: gray;
+	line-height: 17px;
+	font-family: arial, helvetica, sans-serif;
+}
+
+#recrun-html {
+	margin-top: 11px;
+}
+
+#recrun-container p, #recrun-container strong, #recrun-container em, #recrun-container a {
+	font-size: 18px;
+    line-height: 26px;
+}
+
+#recrun-container p {
+	display: block;
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+#recrun-container strong {
+    font-weight: bold;
+}
+
+#recrun-container em {
+	font-style: italic;
+}
+
+#recrun-apiresponse, #recrun-tokenerror, #recrun-unknownerror {
+	display: none;
+}
+
+#recrun-errors, #recrun-errors a {
+	font-size: 20px;
+    font-family: arial, helvetica, sans-serif;
+}
+
