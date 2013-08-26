@@ -1,9 +1,7 @@
 recrun
 ======
 
-Chrome extension that uses the Diffbot Article API to retain essential content and remove unwanted noise from article web sites.
-
-recrun in an acronym for "retain essential content, remove unwanted noise". It uses the Diffbot Article API to extract relevant content from a site. A Diffbot token is required to use the extension.
+recrun in an acronym that stands for "retain essential content, remove unwanted noise". It uses the Diffbot Article API to extract relevant content from a site. A Diffbot token is required to use the extension.
 
 A free token can be obtained by signing up at https://www.diffbot.com/plans/free.
 
