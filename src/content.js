@@ -16,8 +16,10 @@ var styleSheet = function(file) {
     return link;
 };
 
+var recrunId = '_recrun';
+
 var showOverlay = function() {
-    $('#recrun').bPopup({
+    $('#' + recrunId).bPopup({
         zIndex: 2147483647,
         position: ['auto', '0px'],
         positionStyle: 'fixed'
@@ -29,71 +31,41 @@ var getOverlay = function() {
     return overlay;
 };
 
-var anchorTag = function(href, text, newWindow) {
-    newWindow = (typeof newWindow === "undefined") ? false : newWindow;
-    return '<a href="' + href + '"' + (newWindow ? ' target="_blank"' : '') + '>' + text + '</a>';
-};
-
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
 };
 
-// TODO: overlay should go in an iframe so that styling issues don't arise
-
 // gets the overlay or creates it if it doesn't exist
 var createOverlay = function() {
     var body = document.body;
-    var head = document.head;
     
-    head.appendChild(styleSheet(chrome.extension.getURL('src/cssreset-context.css')));
-    head.appendChild(styleSheet(chrome.extension.getURL('src/style.css')));
+    var iframe = document.createElement('iframe');
+    iframe.src = chrome.extension.getURL('src/iframe.html');
+    iframe.setAttribute('id', recrunId);
     
-    var recrun = document.createElement('div');
-    recrun.setAttribute('id', 'recrun');
+    iframe.style.display = 'none'; // don't make this !important, or it won't change
     
-    recrun.style.display = 'none'; // don't make this !important, or it won't change
+    setPropertyImp(iframe, 'padding', '6px');
+    setPropertyImp(iframe, 'margin-top', '1%');
+    setPropertyImp(iframe, 'margin-bottom', '1%');
+    setPropertyImp(iframe, 'width', '800px');
+    setPropertyImp(iframe, 'height', '95%');
+    setPropertyImp(iframe, 'border-radius', '3px');
+    setPropertyImp(iframe, 'background-color', '#f3f2ee');
+    setPropertyImp(iframe, 'border', '1px solid #ccc');
     
-    setPropertyImp(recrun, 'padding', '6px');
-    setPropertyImp(recrun, 'margin-top', '1%');
-    setPropertyImp(recrun, 'margin-bottom', '1%');
-    setPropertyImp(recrun, 'width', '800px');
-    setPropertyImp(recrun, 'height', '95%');
-    setPropertyImp(recrun, 'border-radius', '3px');
-    setPropertyImp(recrun, 'background-color', '#f3f2ee');
-    setPropertyImp(recrun, 'border', '1px solid #ccc');
-    
-    var loader = chrome.extension.getURL('src/loader.gif');
-    recrun.innerHTML = '<span id="recrun-close" class="b-close">X</span>'
-        +              '<div style="overflow: auto; height: 100%;">'
-        +                '<div class="yui3-cssreset" id="recrun-container">'
-        +                  '<img id="recrun-loader" src="' + loader + '"></img>'
-        +                  '<div id="recrun-apiresponse">'
-        +                    '<div id="recrun-title"></div>'
-        +                    '<div id="recrun-author"></div>'
-        +                    '<div id="recrun-date"></div>'
-        +                    '<div id="recrun-html"></div>'
-        +                  '</div><!-- #recrun-apiresponse -->'
-        +                  '<div id="recrun-errors">'
-        +                    '<div id="recrun-error">'
-        +                      'There was an error.'
-        +                      '<br><br>'
-        +                      'Please make sure you are using a valid token.'
-        +                      '<br><br>'
-        +                      'Visit ' + anchorTag('http://www.diffbot.com', 'diffbot.com', true) + ' to sign up for a free token.'
-        +                      '<br><br>'
-        +                      'Enter your Diffbot token on the recrun ' + anchorTag(chrome.extension.getURL('src/options.html'), 'Options page', true) + '.'
-        +                    '</div><!-- #recrun-error -->'
-        +                  '</div><!-- #recrun-errors -->'
-        +                '</div><!-- #recrun-container -->'
-        +              '</div>';
-    
-    body.appendChild(recrun);
-    return recrun;
+    body.appendChild(iframe);
+    return iframe;
 };
 
 var hideErrors = function() {
     $('#recrun-error').hide();
+};
+
+var getRecrunElementById = function(id) {
+    var iframe = document.getElementById(recrunId);
+    return iframe.contentWindow.document.getElementById(id);
 };
 
 var callApi = function(token) {  
@@ -129,13 +101,13 @@ var callApi = function(token) {
                     var fields = ['title', 'author', 'date'];
                     for (var i = 0; i < fields.length; i++) {
                         var field = fields[i];
-                        var e = document.getElementById('recrun-' + field);
+                        var e = getRecrunElementById('recrun-' + field);
                         if (resp[field])
                             e.innerHTML = resp[field];
                     }
                     
                     var text = '<p>' + resp['text'].replace(/\n/g, '</p><p>') + '</p>';
-                    document.getElementById('recrun-html').innerHTML = text;
+                    getRecrunElementById('recrun-html').innerHTML = text;
                     
                     successFlag = true;
                     $('#recrun-loader').hide();

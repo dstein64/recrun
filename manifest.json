@@ -23,6 +23,6 @@
    },
    "web_accessible_resources": [ "src/loader.gif",
                                  "src/style.css",
-                                 "src/cssreset-context.css",
-                                 "src/options.html" ]
+                                 "src/options.html",
+                                 "src/iframe.html" ]
 }
