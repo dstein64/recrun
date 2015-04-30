@@ -33,8 +33,8 @@ var createOverlay = function() {
     var body = document.getElementsByTagName('body')[0];
     var head = document.getElementsByTagName('head')[0];
     
-    head.appendChild(styleSheet(chrome.extension.getURL('cssreset-context.css')));
-    head.appendChild(styleSheet(chrome.extension.getURL('style.css')));
+    head.appendChild(styleSheet(chrome.extension.getURL('src/cssreset-context.css')));
+    head.appendChild(styleSheet(chrome.extension.getURL('src/style.css')));
     
     var recrun = document.createElement('div');
     recrun.setAttribute('id', 'recrun');
@@ -52,7 +52,7 @@ var createOverlay = function() {
     style.backgroundColor = '#f3f2ee';
     style.border = '1px solid #ccc';
     
-    var loader = chrome.extension.getURL('loader.gif');
+    var loader = chrome.extension.getURL('src/loader.gif');
     recrun.innerHTML = '<span id="recrun-close" class="b-close">X</span>'
         +              '<div style="overflow: auto; height: 100%;">'
         +                '<div class="yui3-cssreset" id="recrun-container">'
@@ -71,7 +71,7 @@ var createOverlay = function() {
         +                      '<br><br>'
         +                      'Visit ' + anchorTag('http://www.diffbot.com', 'diffbot.com', true) + ' to sign up for a free token.'
         +                      '<br><br>'
-        +                      'Enter your Diffbot token on the recrun ' + anchorTag(chrome.extension.getURL('options.html'), 'Options page', true) + '.'
+        +                      'Enter your Diffbot token on the recrun ' + anchorTag(chrome.extension.getURL('src/options.html'), 'Options page', true) + '.'
         +                    '</div><!-- #recrun-error -->'
         +                  '</div><!-- #recrun-errors -->'
         +                '</div><!-- #recrun-container -->'
