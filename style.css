@@ -69,7 +69,7 @@
 	font-style: italic;
 }
 
-#recrun-apiresponse, #recrun-tokenerror, #recrun-unknownerror {
+#recrun-apiresponse, #recrun-error {
 	display: none;
 }
 

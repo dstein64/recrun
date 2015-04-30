@@ -64,16 +64,15 @@ var createOverlay = function() {
         +                    '<div id="recrun-html"></div>'
         +                  '</div><!-- #recrun-apiresponse -->'
         +                  '<div id="recrun-errors">'
-        +                    '<div id="recrun-tokenerror">'
-        +                      'There is an error with your Diffbot token.'
+        +                    '<div id="recrun-error">'
+        +                      'There was an error.'
+        +                      '<br><br>'
+        +                      'Please make sure you are using a valid token.'
         +                      '<br><br>'
         +                      'Visit ' + anchorTag('http://www.diffbot.com', 'diffbot.com', true) + ' to sign up for a free token.'
         +                      '<br><br>'
         +                      'Enter your Diffbot token on the recrun ' + anchorTag(chrome.extension.getURL('options.html'), 'Options page', true) + '.'
-        +                    '</div><!-- #recrun-tokenerror -->'
-        +                    '<div id="recrun-unknownerror">'
-        +                      'There was an error.'
-        +                    '</div><!-- #recrun-unknownerror -->'
+        +                    '</div><!-- #recrun-error -->'
         +                  '</div><!-- #recrun-errors -->'
         +                '</div><!-- #recrun-container -->'
         +              '</div>';
@@ -83,8 +82,7 @@ var createOverlay = function() {
 };
 
 var hideErrors = function() {
-    $('#recrun-tokenerror').hide();
-    $('#recrun-unknownerror').hide();
+    $('#recrun-error').hide();
 };
 
 var callApi = function(token) {  
@@ -107,28 +105,35 @@ var callApi = function(token) {
     xhr.open("GET", apiUrl, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
+            var errorFn = function() {
+                $('#recrun-loader').hide();
+                $('#recrun-error').show();
+            };
+            var status = xhr.status;
+            if (status === 200) {
                 var resp = JSON.parse(xhr.responseText);
-                var fields = ['title', 'author', 'date'];
-                for (var i = 0; i < fields.length; i++) {
-                    var field = fields[i];
-                    var e = document.getElementById('recrun-' + field);
-                    if (resp[field])
-                        e.innerHTML = resp[field];
+                if ('error' in resp) {
+                    errorFn();
+                } else {
+                    var fields = ['title', 'author', 'date'];
+                    for (var i = 0; i < fields.length; i++) {
+                        var field = fields[i];
+                        var e = document.getElementById('recrun-' + field);
+                        if (resp[field])
+                            e.innerHTML = resp[field];
+                    }
+                    
+                    var text = '<p>' + resp['text'].replace(/\n/g, '</p><p>') + '</p>';
+                    document.getElementById('recrun-html').innerHTML = text;
+                    
+                    successFlag = true;
+                    $('#recrun-loader').hide();
+                    $('#recrun-apiresponse').show();
                 }
-                
-                var text = '<p>' + resp['text'].replace(/\n/g, '</p><p>') + '</p>';
-                document.getElementById('recrun-html').innerHTML = text;
-                
-                successFlag = true;
-                $('#recrun-loader').hide();
-                $('#recrun-apiresponse').show();
-            } else if (xhr.status == 401) { 
-                $('#recrun-loader').hide();
-                $('#recrun-tokenerror').show();
+            } else if (status === 401) { 
+                errorFn();
             } else {
-                $('#recrun-loader').hide();
-                $('#recrun-unknownerror').show();
+                errorFn();
             }
         }
     };
@@ -157,4 +162,5 @@ chrome.runtime.onMessage.addListener(
 chrome.runtime.sendMessage({method: "getToken"}, function(response) {
     token = response.token;
 });
+
 

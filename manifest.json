@@ -1,14 +1,15 @@
 {
    "content_scripts": [ {
+      "run_at": "document_start",
       "js": [ "jquery-1.10.2.js", "jquery.bpopup.js", "content.js" ],
-      "matches": [ "<all_urls>" ]
+      "matches": [ "*://*/*" ]
    } ],
    "options_page": "options.html",
    "description": "Retain essential content, remove unwanted noise.",
    "manifest_version": 2,
    "name": "recrun",
-   "permissions": [ "tabs" ],
-   "version": "1.0",
+   "permissions": [ "tabs", "*://*/*" ],
+   "version": "1.0.1",
    "browser_action": {
       "default_icon": "icon38.png"
    },
@@ -18,5 +19,5 @@
    "background": {
       "scripts": [ "background.js" ]
    },
-   "web_accessible_resources": [ "loader.gif", "style.css", "cssreset-context.css" ]
+   "web_accessible_resources": [ "loader.gif", "style.css", "cssreset-context.css", "options.html" ]
 }
