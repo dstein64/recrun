@@ -1,80 +1,89 @@
 #recrun-close {
-	font: bold 20px sans-serif;
-	padding-left: 6px;
-	padding-right: 6px;
-	padding-top: 2px;
-	padding-bottom: 2px;
-	position: absolute;
-	left: 0px;
-    top: 0px;
-	color: gray;
-	cursor: pointer;
-	display: inline-block;
-	text-align: center;
-	text-decoration: none;
+	font: bold 20px sans-serif !important;
+	padding-left: 6px !important;
+	padding-right: 6px !important;
+	padding-top: 2px !important;
+	padding-bottom: 2px !important;
+	position: absolute !important;
+	left: 0px !important;
+    top: 0px !important;
+	color: gray !important;
+	cursor: pointer !important;
+	display: inline-block !important;
+	text-align: center !important;
+	text-decoration: none !important;
 }
 
 #recrun-container {
-	font-family: georgia, 'times new roman', times, serif;
-	width: 600px;
-	margin-left: auto;
-    margin-right: auto;
-    margin-top: 15px;
-    margin-bottom: 20px;
+	font-family: georgia, 'times new roman', times, serif !important;
+	width: 600px !important;
+	margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 15px !important;
+    margin-bottom: 20px !important;
 }
 
 #recrun-loader {
+	all:initial;
 	display: block;
-	margin-left: auto;
-	margin-right: auto;
+	margin-left: auto !important;
+	margin-right: auto !important;
 }
 
 #recrun-title {
-	text-align: left;
+	text-align: left !important;
 	display: block;
-	font-size: 28px;
-	line-height: 33px;
-	margin-bottom: 13px;
+	font-size: 28px !important;
+	line-height: 33px !important;
+	margin-bottom: 13px !important;
 }
 
 #recrun-author, #recrun-date {
-	text-align: left;
+	text-align: left !important;
 	display: block;
-	font-size: 14px;
-	color: gray;
-	line-height: 17px;
-	font-family: arial, helvetica, sans-serif;
+	font-size: 14px !important;
+	color: gray !important;
+	line-height: 17px !important;
+	font-family: arial, helvetica, sans-serif !important;
 }
 
 #recrun-html {
-	margin-top: 11px;
+	margin-top: 11px !important;
 }
 
 #recrun-container p, #recrun-container strong, #recrun-container em, #recrun-container a {
-	font-size: 18px;
-    line-height: 26px;
+	font-size: 18px !important;
+    line-height: 26px !important;
 }
 
 #recrun-container p {
-	display: block;
-    text-align: left;
-    margin-bottom: 15px;
+	display: block !important;
+    text-align: left !important;
+    margin-bottom: 15px !important;
+}
+
+#recrun-container a:link,
+#recrun-container a:hover,
+#recrun-container a:active,
+#recrun-container a:visited {
+	color: #0c65a5 !important;
+	font-size: inherit !important;
+	text-decoration: none !important;
 }
 
 #recrun-container strong {
-    font-weight: bold;
+    font-weight: bold !important;
 }
 
 #recrun-container em {
-	font-style: italic;
+	font-style: italic !important;
 }
 
 #recrun-apiresponse, #recrun-error {
 	display: none;
+    font-size: 20px !important;
+    font-family: arial, helvetica, sans-serif !important;
+    text-align: initial !important;
+    line-height: initial !important;
+    color: initial !important;
 }
-
-#recrun-errors, #recrun-errors a {
-	font-size: 20px;
-    font-family: arial, helvetica, sans-serif;
-}
-

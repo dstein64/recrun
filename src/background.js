@@ -1,3 +1,14 @@
+var ping = new Set();
+
+var onStartup = false; // have we heard from onStartup?
+chrome.runtime.onStartup.addListener(function() {
+    onStartup = true;
+});
+
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+    ping['delete'](tabId);
+});
+
 chrome.browserAction.onClicked.addListener(function() {
     chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {method: 'recrun'});
@@ -5,16 +16,16 @@ chrome.browserAction.onClicked.addListener(function() {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.method == "getToken") {
+    var method = request.method;
+    var tabId = sender.tab.id;
+    if (method === "getToken") {
         sendResponse({token: localStorage['token']});
+        console.log(localStorage['token']);
+    } else if (method === 'ping') {
+        ping.add(tabId);
     } else {
         sendResponse({});
     }
-});
-
-var onStartup = false; // have we heard from onStartup?
-chrome.runtime.onStartup.addListener(function() {
-    onStartup = true;
 });
 
 var ContentScript = function(script, js, allFrames, runAt) {
@@ -65,9 +76,9 @@ var manualInject = function(force) {
         for (var i = 0; i < tabs.length; i++) {
             var tab = tabs[i];
             var tabId = tab.id;
-//            if (ping.has(tabId)) {
-//                continue;
-//            }
+            if (ping.has(tabId)) {
+                continue;
+            }
             var url = tab.url;
             if (/^(?:http|https):\/\//.test(url)) {
                 (function(id) {

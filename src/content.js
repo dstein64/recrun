@@ -1,3 +1,9 @@
+chrome.runtime.sendMessage({'message': "ping"});
+
+chrome.runtime.sendMessage({method: "getToken"}, function(response) {
+    token = response.token;
+});
+
 var getApiUrl = function(token, url) {
     return 'https://www.diffbot.com/api/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
@@ -28,10 +34,17 @@ var anchorTag = function(href, text, newWindow) {
     return '<a href="' + href + '"' + (newWindow ? ' target="_blank"' : '') + '>' + text + '</a>';
 };
 
+var setPropertyImp = function(element, key, val) {
+    // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
+    element.style.setProperty(key, val, 'important');
+};
+
+// TODO: overlay should go in an iframe so that styling issues don't arise
+
 // gets the overlay or creates it if it doesn't exist
 var createOverlay = function() {
-    var body = document.getElementsByTagName('body')[0];
-    var head = document.getElementsByTagName('head')[0];
+    var body = document.body;
+    var head = document.head;
     
     head.appendChild(styleSheet(chrome.extension.getURL('src/cssreset-context.css')));
     head.appendChild(styleSheet(chrome.extension.getURL('src/style.css')));
@@ -39,18 +52,16 @@ var createOverlay = function() {
     var recrun = document.createElement('div');
     recrun.setAttribute('id', 'recrun');
     
-    var style = recrun.style;
-    style.display = 'none';
-    style.padding = '6px';
-    // without the following, overlay would press against top
-    // (it wasn't properly vertically aligned for some reason)
-    style.marginTop = '1%';
-    style.marginBottom = '1%';
-    style.width = '800px';
-    style.height = '95%';
-    style.borderRadius = '3px';
-    style.backgroundColor = '#f3f2ee';
-    style.border = '1px solid #ccc';
+    recrun.style.display = 'none'; // don't make this !important, or it won't change
+    
+    setPropertyImp(recrun, 'padding', '6px');
+    setPropertyImp(recrun, 'margin-top', '1%');
+    setPropertyImp(recrun, 'margin-bottom', '1%');
+    setPropertyImp(recrun, 'width', '800px');
+    setPropertyImp(recrun, 'height', '95%');
+    setPropertyImp(recrun, 'border-radius', '3px');
+    setPropertyImp(recrun, 'background-color', '#f3f2ee');
+    setPropertyImp(recrun, 'border', '1px solid #ccc');
     
     var loader = chrome.extension.getURL('src/loader.gif');
     recrun.innerHTML = '<span id="recrun-close" class="b-close">X</span>'
@@ -157,10 +168,5 @@ chrome.runtime.onMessage.addListener(
         } else if (request.method == "updateToken") {
             token = request.token;
         }
-    });
-
-chrome.runtime.sendMessage({method: "getToken"}, function(response) {
-    token = response.token;
 });
-
 
