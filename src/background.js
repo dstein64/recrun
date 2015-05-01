@@ -20,7 +20,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var tabId = sender.tab.id;
     if (method === "getToken") {
         sendResponse({token: localStorage['token']});
-        console.log(localStorage['token']);
     } else if (method === 'ping') {
         ping.add(tabId);
     } else {

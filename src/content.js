@@ -152,8 +152,6 @@ var recrun = function() {
     };
     
     if (resp) {
-        console.log(location.href);
-        console.log(resp);
         showOverlay(show);
     } else {
         showOverlay(function() {
