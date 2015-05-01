@@ -93,7 +93,16 @@ var token = ''; // have to update token when this script is run and when user up
                 // there is no synchronous way that you're aware of to get the token from 
                 // local storage right before making an API call.
 
+var overlayOpen = function() {
+    return overlay && (document.getElementsByClassName('b-modal').length > 0);
+};
+
 var recrun = function() {
+    if (overlayOpen()) {
+        overlay.close();
+        return;
+    }
+    
     if (!getOverlay())
         createOverlay();
     
