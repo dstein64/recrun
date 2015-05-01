@@ -4,7 +4,8 @@
       "js": [ "src/jquery-1.10.2.js",
               "src/jquery.bpopup.js",
               "src/content.js" ],
-      "matches": [ "*://*/*" ]
+      "matches": [ "*://*/*" ],
+      "all_frames": false
    } ],
    "options_page": "src/options.html",
    "description": "Retain essential content, remove unwanted noise.",

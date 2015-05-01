@@ -78,6 +78,11 @@
 	font-style: italic;
 }
 
+* {
+	max-width: 100%;
+	word-wrap: break-word;
+}
+
 #recrun-apiresponse, #recrun-error {
 	display: none;
     font-size: 20px;

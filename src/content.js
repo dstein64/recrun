@@ -5,7 +5,7 @@ chrome.runtime.sendMessage({method: "getToken"}, function(response) {
 });
 
 var getApiUrl = function(token, url) {
-    return 'https://www.diffbot.com/api/article?html&token=' + token + '&url=' + encodeURIComponent(url);
+    return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
 
 var styleSheet = function(file) {
@@ -18,22 +18,39 @@ var styleSheet = function(file) {
 
 var recrunId = '_recrun';
 
-var showOverlay = function() {
-    $('#' + recrunId).bPopup({
+var overlay = null;
+var showOverlay = function(callback) {
+    overlay = $('#' + recrunId).bPopup({
         zIndex: 2147483647,
         position: ['auto', '0px'],
         positionStyle: 'fixed'
+    }, function() {
+        var intervalId = setInterval(function() {
+            var iframe = document.getElementById(recrunId);
+            if (iframe.contentWindow.document.readyState === 'complete') {
+                clearInterval(intervalId);
+                callback();
+            }
+        }, 100);
     });
 };
-
-var getOverlay = function() {
-    var overlay = document.getElementById('recrun');
-    return overlay;
-};
+function receiveMessage(event) {
+    if (event.data === 'close'
+          && event.origin === (new URL(chrome.extension.getURL(''))).origin
+          && overlay) {
+        overlay.close();
+    }
+}
+window.addEventListener("message", receiveMessage, false);
 
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
+};
+
+var getOverlay = function() {
+    var overlay = document.getElementById(recrunId);
+    return overlay;
 };
 
 // gets the overlay or creates it if it doesn't exist
@@ -41,7 +58,9 @@ var createOverlay = function() {
     var body = document.body;
     
     var iframe = document.createElement('iframe');
-    iframe.src = chrome.extension.getURL('src/iframe.html');
+    var src = 'src/iframe.html';
+    var hash = '#' + encodeURIComponent(location.href);
+    iframe.src = chrome.extension.getURL(src + hash);
     iframe.setAttribute('id', recrunId);
     
     iframe.style.display = 'none'; // don't make this !important, or it won't change
@@ -59,86 +78,126 @@ var createOverlay = function() {
     return iframe;
 };
 
-var hideErrors = function() {
-    $('#recrun-error').hide();
-};
-
 var getRecrunElementById = function(id) {
     var iframe = document.getElementById(recrunId);
     return iframe.contentWindow.document.getElementById(id);
 };
 
-var callApi = function(token) {  
-    if (!getOverlay())
-        createOverlay();
-    
-    showOverlay();
-    $('#recrun-loader').show();
-    hideErrors();
-    
-    if (!token) {
-        // token required ignore for now since this will be handled by the 401 error
-        //console.log('no token');
-        //return;
-    }
-    
-    var url = document.location.href;
-    var xhr = new XMLHttpRequest();
-    var apiUrl = getApiUrl(token, url);
-    xhr.open("GET", apiUrl, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var errorFn = function() {
-                $('#recrun-loader').hide();
-                $('#recrun-error').show();
-            };
-            var status = xhr.status;
-            if (status === 200) {
-                var resp = JSON.parse(xhr.responseText);
-                if ('error' in resp) {
-                    errorFn();
-                } else {
-                    var fields = ['title', 'author', 'date'];
-                    for (var i = 0; i < fields.length; i++) {
-                        var field = fields[i];
-                        var e = getRecrunElementById('recrun-' + field);
-                        if (resp[field])
-                            e.innerHTML = resp[field];
-                    }
-                    
-                    var text = '<p>' + resp['text'].replace(/\n/g, '</p><p>') + '</p>';
-                    getRecrunElementById('recrun-html').innerHTML = text;
-                    
-                    successFlag = true;
-                    $('#recrun-loader').hide();
-                    $('#recrun-apiresponse').show();
-                }
-            } else if (status === 401) { 
-                errorFn();
-            } else {
-                errorFn();
-            }
-        }
-    };
-    xhr.send();
+var recrunShow = function(id) {
+    $(getRecrunElementById(id)).show();
 };
+
+var recrunHide = function(id) {
+    $(getRecrunElementById(id)).hide();
+};
+
+// have to store response here. recalling bpopup relaods the iframe,
+// losing its content.
+var resp = null;
 
 var token = ''; // have to update token when this script is run and when user updates token.
                 // there is no synchronous way that you're aware of to get the token from 
                 // local storage right before making an API call.
 
-var successFlag = false; // keeps track of whether the last request was successful or not
-
-chrome.runtime.onMessage.addListener(
-    function(request) {
-        if (request.method == "recrun") {
-            if (successFlag)
-                showOverlay();
-            else {
-                callApi(token);
+var recrun = function() {
+    if (!getOverlay())
+        createOverlay();
+    
+    var show = function() {
+        recrunHide('recrun-loader');
+        if (resp) {
+            var article = resp[0];
+            var fields = ['title', 'author', 'date'];
+            for (var i = 0; i < fields.length; i++) {
+                var field = fields[i];
+                var e = getRecrunElementById('recrun-' + field);
+                if (field in article && e) {
+                    e.appendChild(document.createTextNode(article[field]));
+                }
             }
-        } else if (request.method == "updateToken") {
-            token = request.token;
+            
+            var e = getRecrunElementById('recrun-html');
+            
+            if ('images' in article && e) {
+                var images = article['images'];
+                for (var i = 0; i < images.length; i++) {
+                    var image = images[i];
+                    if ('primary' in image
+                            && image['primary'] === true
+                            && 'url' in image
+                            && (image['url'].startsWith('http://')
+                                    || image['url'].startsWith('https://'))) {
+                        var img = document.createElement('img');
+                        img.src = image['url'];
+                        e.appendChild(img);
+                        break;
+                    }
+                }
+            }
+            
+            if ('text' in article && e) {
+                var text = article['text'];
+                var paragraphs = text.split(/\n/g);
+                for (var i = 0; i < paragraphs.length; i++) {
+                    var p = document.createElement('p');
+                    p.appendChild(document.createTextNode(paragraphs[i]));
+                    e.appendChild(p);
+                }
+            }
+            
+            recrunShow('recrun-apiresponse');
+        } else {
+            recrunShow('recrun-error');
         }
+    };
+    
+    if (resp) {
+        console.log(location.href);
+        console.log(resp);
+        showOverlay(show);
+    } else {
+        showOverlay(function() {
+            recrunHide('recrun-apiresponse');
+            recrunHide('recrun-error');
+            recrunShow('recrun-loader');
+            // missing token will return an error from Diffbot
+            var url = document.location.href;
+            var xhr = new XMLHttpRequest();
+            var apiUrl = getApiUrl(token, url);
+            xhr.open("GET", apiUrl, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var _resp = JSON.parse(xhr.responseText);
+                        if (!('error' in _resp)
+                                && 'objects' in _resp
+                                && _resp['objects'].length > 0) {
+                            var articles = [];
+                            for (var i = 0; i < _resp['objects'].length; i++) {
+                                var object = _resp['objects'][i];
+                                if ('type' in object && object['type'] === 'article') {
+                                    articles.push(object);
+                                }
+                            }
+                            if (articles.length > 0)
+                                resp = articles;
+                        }
+                    }
+                    show();
+                }
+            };
+            xhr.send();
+        });
+    }
+};
+
+chrome.runtime.onMessage.addListener(function(request) {
+    if (request.method == "recrun") {
+        recrun();
+    } else if (request.method == "updateToken") {
+        token = request.token;
+    }
 });
+
 
