@@ -5,9 +5,16 @@ chrome.runtime.onStartup.addListener(function() {
     onStartup = true;
 });
 
-var opts = localStorage["options"];
-if (!opts) {
-    // set defaults
+var getOptions = function() {
+    var opts = localStorage["options"];
+    if (opts) {
+        opts = JSON.parse(opts);
+    }
+    return opts;
+};
+
+// set defaults
+if (!getOptions()) {
     var options = Object.create(null);
     options['token'] = '';
     localStorage["options"] = JSON.stringify(options);
@@ -27,7 +34,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
     var tabId = sender.tab.id;
     if (method === "getOptions") {
-        sendResponse(options);
+        sendResponse(getOptions());
     } else if (method === 'ping') {
         ping.add(tabId);
     } else {

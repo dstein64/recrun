@@ -1,4 +1,4 @@
-chrome.runtime.sendMessage({'message': "ping"});
+chrome.runtime.sendMessage({method: "ping"});
 
 var token = ''; // have to update token when this script is run and when user updates token.
                 // there is no synchronous way that you're aware of to get the token from 
@@ -55,6 +55,7 @@ var bPopup = function(callback) {
         }, 100);
     });
 };
+
 function receiveMessage(event) {
     if (event.data === 'close'
           && event.origin === (new URL(chrome.extension.getURL(''))).origin
@@ -62,6 +63,7 @@ function receiveMessage(event) {
         overlay.close();
     }
 }
+//the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
 
 var setPropertyImp = function(element, key, val) {
@@ -207,9 +209,10 @@ var recrun = function() {
 };
 
 chrome.runtime.onMessage.addListener(function(request) {
-    if (request.method == "recrun") {
+    var method = request.method; 
+    if (method === "recrun") {
         recrun();
-    } else if (request.method == "updateOptions") {
+    } else if (method === "updateOptions") {
         updateOptions(request.data);
     }
 });
