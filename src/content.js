@@ -1,7 +1,16 @@
 chrome.runtime.sendMessage({'message': "ping"});
 
-chrome.runtime.sendMessage({method: "getToken"}, function(response) {
-    token = response.token;
+var token = ''; // have to update token when this script is run and when user updates token.
+                // there is no synchronous way that you're aware of to get the token from 
+                // local storage right before making an API call.
+
+var updateOptions = function(options) {
+    token = options.token;
+};
+
+chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+    var options = response;
+    updateOptions(options);
 });
 
 var getApiUrl = function(token, url) {
@@ -88,10 +97,6 @@ var createOverlay = function() {
 // have to store response here. recalling bpopup relaods the iframe,
 // losing its content.
 var resp = null;
-
-var token = ''; // have to update token when this script is run and when user updates token.
-                // there is no synchronous way that you're aware of to get the token from 
-                // local storage right before making an API call.
 
 var overlayOpen = function() {
     return overlay && (document.getElementsByClassName('b-modal').length > 0);
@@ -204,8 +209,8 @@ var recrun = function() {
 chrome.runtime.onMessage.addListener(function(request) {
     if (request.method == "recrun") {
         recrun();
-    } else if (request.method == "updateToken") {
-        token = request.token;
+    } else if (request.method == "updateOptions") {
+        updateOptions(request.data);
     }
 });
 

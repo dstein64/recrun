@@ -5,6 +5,14 @@ chrome.runtime.onStartup.addListener(function() {
     onStartup = true;
 });
 
+var opts = localStorage["options"];
+if (!opts) {
+    // set defaults
+    var options = Object.create(null);
+    options['token'] = '';
+    localStorage["options"] = JSON.stringify(options);
+}
+
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     ping['delete'](tabId);
 });
@@ -18,8 +26,8 @@ chrome.browserAction.onClicked.addListener(function() {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
     var tabId = sender.tab.id;
-    if (method === "getToken") {
-        sendResponse({token: localStorage['token']});
+    if (method === "getOptions") {
+        sendResponse(options);
     } else if (method === 'ping') {
         ping.add(tabId);
     } else {
