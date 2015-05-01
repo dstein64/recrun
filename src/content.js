@@ -11,7 +11,7 @@ var getApiUrl = function(token, url) {
 var recrunId = '_recrun';
 
 var overlay = null;
-var showOverlay = function(callback) {
+var bPopup = function(callback) {
     overlay = $('#' + recrunId).bPopup({
         zIndex: 2147483647,
         position: ['auto', '0px'],
@@ -144,9 +144,9 @@ var recrun = function() {
     };
     
     if (resp) {
-        showOverlay(show);
+        bPopup(show);
     } else {
-        showOverlay(function() {
+        bPopup(function() {
             recrunHide('recrun-apiresponse');
             recrunHide('recrun-error');
             recrunShow('recrun-loader');
