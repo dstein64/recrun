@@ -8,14 +8,6 @@ var getApiUrl = function(token, url) {
     return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
 
-var styleSheet = function(file) {
-    var link = document.createElement('link');
-    link.setAttribute('href', file);
-    link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('type', 'text/css');
-    return link;
-};
-
 var recrunId = '_recrun';
 
 var overlay = null;
