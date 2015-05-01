@@ -1,16 +1,16 @@
 chrome.runtime.sendMessage({method: "ping"});
 
-var token = ''; // have to update token when this script is run and when user updates token.
-                // there is no synchronous way that you're aware of to get the token from 
-                // local storage right before making an API call.
+var options = null; // have to update options when this script is run and when user updates options.
+                    // there is no synchronous way that you're aware of to get the token from 
+                    // local storage right before making an API call.
 
-var updateOptions = function(options) {
-    token = options.token;
+var updateOptions = function(opts) {
+    options = opts;
 };
 
 chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
-    var options = response;
-    updateOptions(options);
+    var opts = response;
+    updateOptions(opts);
 });
 
 var getApiUrl = function(token, url) {
@@ -129,7 +129,7 @@ var recrun = function() {
             
             var e = getRecrunElementById('recrun-html');
             
-            if ('images' in article && e) {
+            if (options.media && 'images' in article && e) {
                 var images = article['images'];
                 for (var i = 0; i < images.length; i++) {
                     var image = images[i];
@@ -172,13 +172,13 @@ var recrun = function() {
             recrunShow('recrun-loader');
             // missing token will return an error from Diffbot
             
-            var validToken = ((typeof token) === 'string') && token.length > 0;
+            var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
             if (!validToken) {
                 show(); // will show an error
             } else {
                 var url = document.location.href;
                 var xhr = new XMLHttpRequest();
-                var apiUrl = getApiUrl(token, url);
+                var apiUrl = getApiUrl(options.token, url);
                 xhr.open("GET", apiUrl, true);
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {

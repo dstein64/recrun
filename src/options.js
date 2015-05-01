@@ -1,8 +1,12 @@
 function save_options() {
     var tokenInput = document.getElementById("token").value;
+    var media = document.getElementById('media-checkbox').checked;
+    var diffbotHtml = document.getElementById('diffbot-html-checkbox').checked;
     
     var options = Object.create(null);
     options['token'] = tokenInput;
+    options['media'] = media;
+    options['diffbotHtml'] = diffbotHtml;
     
     localStorage["options"] = JSON.stringify(options);
     
@@ -24,13 +28,16 @@ function save_options() {
 
 function restore_options() {
     var options = JSON.parse(localStorage["options"]);
-    if (options) {
-        var token = options['token'];
-        if (token) {
-            var tokenInput = document.getElementById("token");
-            tokenInput.value = token;   
-        }
-    }
+    
+    var token = options['token'];
+    var tokenInput = document.getElementById("token");
+    tokenInput.value = token;
+    
+    var media = options['media'];
+    document.getElementById('media-checkbox').checked = media;
+    
+    var diffbotHtml = options['diffbotHtml'];
+    document.getElementById('diffbot-html-checkbox').checked = diffbotHtml;
 }
 document.addEventListener('DOMContentLoaded', restore_options);
 document.querySelector('#save').addEventListener('click', save_options);

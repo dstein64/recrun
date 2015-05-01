@@ -14,11 +14,23 @@ var getOptions = function() {
 };
 
 // set defaults
-if (!getOptions()) {
-    var options = Object.create(null);
-    options['token'] = '';
-    localStorage["options"] = JSON.stringify(options);
-}
+(function() {
+    var opts = getOptions();
+    if (!opts) {
+        opts = Object.create(null);
+    }
+    
+    if (!('token' in opts))
+        opts['token'] = '';
+    
+    if (!('media' in opts))
+        opts['media'] = true;
+    
+    if (!('diffbotHtml' in opts))
+        opts['diffbotHtml'] = true;
+    
+    localStorage["options"] = JSON.stringify(opts);
+})();
 
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     ping['delete'](tabId);
