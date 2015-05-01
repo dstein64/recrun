@@ -10,6 +10,27 @@ var getApiUrl = function(token, url) {
 
 var recrunId = '_recrun';
 
+var getOverlay = function() {
+    return document.getElementById(recrunId);
+};
+
+var getRecrunDoc = function() {
+    var iframe = document.getElementById(recrunId);
+    return iframe.contentWindow.document;
+};
+
+var getRecrunElementById = function(id) {
+    return getRecrunDoc().getElementById(id);
+};
+
+var recrunShow = function(id) {
+    $(getRecrunElementById(id)).show();
+};
+
+var recrunHide = function(id) {
+    $(getRecrunElementById(id)).hide();
+};
+
 var overlay = null;
 var bPopup = function(callback) {
     overlay = $('#' + recrunId).bPopup({
@@ -18,8 +39,7 @@ var bPopup = function(callback) {
         positionStyle: 'fixed'
     }, function() {
         var intervalId = setInterval(function() {
-            var iframe = document.getElementById(recrunId);
-            if (iframe.contentWindow.document.readyState === 'complete') {
+            if (getRecrunDoc().readyState === 'complete') {
                 clearInterval(intervalId);
                 callback();
             }
@@ -38,11 +58,6 @@ window.addEventListener("message", receiveMessage, false);
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
-};
-
-var getOverlay = function() {
-    var overlay = document.getElementById(recrunId);
-    return overlay;
 };
 
 // gets the overlay or creates it if it doesn't exist
@@ -70,19 +85,6 @@ var createOverlay = function() {
     return iframe;
 };
 
-var getRecrunElementById = function(id) {
-    var iframe = document.getElementById(recrunId);
-    return iframe.contentWindow.document.getElementById(id);
-};
-
-var recrunShow = function(id) {
-    $(getRecrunElementById(id)).show();
-};
-
-var recrunHide = function(id) {
-    $(getRecrunElementById(id)).hide();
-};
-
 // have to store response here. recalling bpopup relaods the iframe,
 // losing its content.
 var resp = null;
@@ -98,13 +100,14 @@ var recrun = function() {
     var show = function() {
         recrunHide('recrun-loader');
         if (resp) {
+            var doc = getRecrunDoc(); // recrun document
             var article = resp[0];
             var fields = ['title', 'author', 'date'];
             for (var i = 0; i < fields.length; i++) {
                 var field = fields[i];
                 var e = getRecrunElementById('recrun-' + field);
-                if (field in article && e) {
-                    e.appendChild(document.createTextNode(article[field]));
+                if (field in article && e && doc) {
+                    e.appendChild(doc.createTextNode(article[field]));
                 }
             }
             
@@ -118,8 +121,9 @@ var recrun = function() {
                             && image['primary'] === true
                             && 'url' in image
                             && (image['url'].startsWith('http://')
-                                    || image['url'].startsWith('https://'))) {
-                        var img = document.createElement('img');
+                                    || image['url'].startsWith('https://'))
+                            && doc) {
+                        var img = doc.createElement('img');
                         img.src = image['url'];
                         e.appendChild(img);
                         break;
@@ -127,12 +131,12 @@ var recrun = function() {
                 }
             }
             
-            if ('text' in article && e) {
+            if ('text' in article && e && doc) {
                 var text = article['text'];
                 var paragraphs = text.split(/\n/g);
                 for (var i = 0; i < paragraphs.length; i++) {
-                    var p = document.createElement('p');
-                    p.appendChild(document.createTextNode(paragraphs[i]));
+                    var p = doc.createElement('p');
+                    p.appendChild(doc.createTextNode(paragraphs[i]));
                     e.appendChild(p);
                 }
             }
