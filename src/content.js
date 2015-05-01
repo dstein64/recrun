@@ -164,33 +164,39 @@ var recrun = function() {
             recrunHide('recrun-error');
             recrunShow('recrun-loader');
             // missing token will return an error from Diffbot
-            var url = document.location.href;
-            var xhr = new XMLHttpRequest();
-            var apiUrl = getApiUrl(token, url);
-            xhr.open("GET", apiUrl, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4) {
-                    var status = xhr.status;
-                    if (status === 200) {
-                        var _resp = JSON.parse(xhr.responseText);
-                        if (!('error' in _resp)
-                                && 'objects' in _resp
-                                && _resp['objects'].length > 0) {
-                            var articles = [];
-                            for (var i = 0; i < _resp['objects'].length; i++) {
-                                var object = _resp['objects'][i];
-                                if ('type' in object && object['type'] === 'article') {
-                                    articles.push(object);
+            
+            var validToken = ((typeof token) === 'string') && token.length > 0;
+            if (!validToken) {
+                show(); // will show an error
+            } else {
+                var url = document.location.href;
+                var xhr = new XMLHttpRequest();
+                var apiUrl = getApiUrl(token, url);
+                xhr.open("GET", apiUrl, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4) {
+                        var status = xhr.status;
+                        if (status === 200) {
+                            var _resp = JSON.parse(xhr.responseText);
+                            if (!('error' in _resp)
+                                    && 'objects' in _resp
+                                    && _resp['objects'].length > 0) {
+                                var articles = [];
+                                for (var i = 0; i < _resp['objects'].length; i++) {
+                                    var object = _resp['objects'][i];
+                                    if ('type' in object && object['type'] === 'article') {
+                                        articles.push(object);
+                                    }
                                 }
+                                if (articles.length > 0)
+                                    resp = articles;
                             }
-                            if (articles.length > 0)
-                                resp = articles;
                         }
+                        show();
                     }
-                    show();
-                }
-            };
-            xhr.send();
+                };
+                xhr.send();
+            }
         });
     }
 };
