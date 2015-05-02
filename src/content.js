@@ -23,9 +23,13 @@ var getOverlay = function() {
     return document.getElementById(recrunId);
 };
 
-var getRecrunDoc = function() {
+var getRecrunWindow = function() {
     var iframe = document.getElementById(recrunId);
-    return iframe.contentWindow.document;
+    return iframe.contentWindow;
+};
+
+var getRecrunDoc = function() {
+    return getRecrunWindow().document;
 };
 
 var getRecrunElementById = function(id) {
@@ -45,7 +49,8 @@ var bPopup = function(callback) {
     overlay = $('#' + recrunId).bPopup({
         zIndex: 2147483647,
         position: ['auto', '0px'],
-        positionStyle: 'fixed'
+        positionStyle: 'fixed',
+        scrollBar2: false
     }, function() {
         var intervalId = setInterval(function() {
             if (getRecrunDoc().readyState === 'complete') {
