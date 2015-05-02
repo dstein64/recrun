@@ -104,6 +104,62 @@ var overlayOpen = function() {
     return overlay && (document.getElementsByClassName('b-modal').length > 0);
 };
 
+var fillOverlay = function() {
+    var doc = getRecrunDoc(); // recrun document
+    var article = resp[0];
+    var fields = ['title', 'author', 'date'];
+    for (var i = 0; i < fields.length; i++) {
+        var field = fields[i];
+        var e = getRecrunElementById('recrun-' + field);
+        if (field in article && e && doc) {
+            e.appendChild(doc.createTextNode(article[field]));
+        }
+    }
+    
+    var e = getRecrunElementById('recrun-html');
+    
+    if (e && doc) {
+        //if (options.diffbotHtml) {
+        if (false) {    
+            if ('html' in article) {
+                // create recrun content from Diffbot's html field
+                var parser = new DOMParser();
+                var html = article['html'];
+                var htmldoc = parser.parseFromString(html, "text/html");
+            }                    
+            
+        } else {
+            // create recrun content from Diffbot's text field
+            if (options.media && 'images' in article) {
+                var images = article['images'];
+                for (var i = 0; i < images.length; i++) {
+                    var image = images[i];
+                    if ('primary' in image
+                            && image['primary'] === true
+                            && 'url' in image
+                            && (image['url'].startsWith('http://')
+                                    || image['url'].startsWith('https://'))) {
+                        var img = doc.createElement('img');
+                        img.src = image['url'];
+                        e.appendChild(img);
+                        break;
+                    }
+                }
+            }
+            
+            if ('text' in article) {
+                var text = article['text'];
+                var paragraphs = text.split(/\n/g);
+                for (var i = 0; i < paragraphs.length; i++) {
+                    var p = doc.createElement('p');
+                    p.appendChild(doc.createTextNode(paragraphs[i]));
+                    e.appendChild(p);
+                }
+            }
+        }   
+    }
+};
+
 var recrun = function() {
     if (overlayOpen()) {
         overlay.close();
@@ -116,47 +172,7 @@ var recrun = function() {
     var show = function() {
         recrunHide('recrun-loader');
         if (resp) {
-            var doc = getRecrunDoc(); // recrun document
-            var article = resp[0];
-            var fields = ['title', 'author', 'date'];
-            for (var i = 0; i < fields.length; i++) {
-                var field = fields[i];
-                var e = getRecrunElementById('recrun-' + field);
-                if (field in article && e && doc) {
-                    e.appendChild(doc.createTextNode(article[field]));
-                }
-            }
-            
-            var e = getRecrunElementById('recrun-html');
-            
-            if (options.media && 'images' in article && e) {
-                var images = article['images'];
-                for (var i = 0; i < images.length; i++) {
-                    var image = images[i];
-                    if ('primary' in image
-                            && image['primary'] === true
-                            && 'url' in image
-                            && (image['url'].startsWith('http://')
-                                    || image['url'].startsWith('https://'))
-                            && doc) {
-                        var img = doc.createElement('img');
-                        img.src = image['url'];
-                        e.appendChild(img);
-                        break;
-                    }
-                }
-            }
-            
-            if ('text' in article && e && doc) {
-                var text = article['text'];
-                var paragraphs = text.split(/\n/g);
-                for (var i = 0; i < paragraphs.length; i++) {
-                    var p = doc.createElement('p');
-                    p.appendChild(doc.createTextNode(paragraphs[i]));
-                    e.appendChild(p);
-                }
-            }
-            
+            fillOverlay();
             recrunShow('recrun-apiresponse');
         } else {
             recrunShow('recrun-error');
@@ -214,6 +230,7 @@ chrome.runtime.onMessage.addListener(function(request) {
         recrun();
     } else if (method === "updateOptions") {
         updateOptions(request.data);
+        resp = null; // reset saved state, so the next call will re-fetch
     }
 });
 
