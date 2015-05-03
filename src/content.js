@@ -332,6 +332,8 @@ var recrun = function() {
         }
     };
     
+    var TIMEOUT = 20000;
+    
     if (resp) {
         bPopup(show);
     } else {
@@ -349,7 +351,7 @@ var recrun = function() {
                 var xhr = new XMLHttpRequest();
                 var apiUrl = getApiUrl(options.token, url);
                 xhr.open("GET", apiUrl, true);
-                xhr.timeout = 20000;
+                xhr.timeout = TIMEOUT;
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
                         var status = xhr.status;
