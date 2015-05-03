@@ -13,21 +13,31 @@ var getOptions = function() {
     return opts;
 };
 
-// set defaults
+var defaultOptions = function() {
+    var options = Object.create(null);
+    options['token'] = '';
+    options['media'] = true;
+    options['diffbotHtml'] = true;
+    return options;
+};
+
+// set missing options using defaults
 (function() {
     var opts = getOptions();
     if (!opts) {
         opts = Object.create(null);
     }
     
+    var defaults = defaultOptions();
+    
     if (!('token' in opts))
-        opts['token'] = '';
+        opts['token'] = defaults['token'];
     
     if (!('media' in opts))
-        opts['media'] = true;
+        opts['media'] = defaults['media'];
     
     if (!('diffbotHtml' in opts))
-        opts['diffbotHtml'] = true;
+        opts['diffbotHtml'] = defaults['diffbotHtml'];
     
     localStorage["options"] = JSON.stringify(opts);
 })();
