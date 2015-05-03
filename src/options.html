@@ -11,10 +11,38 @@
 body {
     margin-top: 20px;
 }
+
+a.tooltip {
+    outline: none;
+    border-bottom: 1px dotted;
+}
+a.tooltip:hover { text-decoration: none; } 
+a.tooltip span {
+    z-index: 10;
+    display: none;
+    padding: 14px 20px;
+    margin-top: -30px;
+    margin-left: 14px;
+    width: auto;
+    line-height: 16px;
+}
+a.tooltip:hover span {
+    display: inline;
+    position: absolute;
+    color: #111;
+    border: 1px solid #DCA;
+    background:#fffAF0;
+}
+a.tooltip span {
+    border-radius:4px;
+    box-shadow: 5px 5px 8px #CCC;
+}
+
 </style>
 </head>
 
 <body>
+
 <div id="container">
 
 <strong>recrun</strong> requires a Diffbot API token.<br><br>
@@ -22,9 +50,9 @@ Visit <a href="http://www.diffbot.com" target="_blank">diffbot.com</a> to sign u
 <br><br>
 Diffbot Token: <input id="token" type="text" name="token" size="35">
 <br><br>
-<input type="checkbox" id="media-checkbox"><label for="media-checkbox">Media</label>
+<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included.</span></a></label>
 <br><br>
-<input type="checkbox" id="diffbot-html-checkbox"><label for="diffbot-html-checkbox">Diffbot html</label>
+<input type="checkbox" id="diffbot-html-checkbox"><label for="diffbot-html-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
 
 <br><br>
 <button id="defaults">Defaults</button>
