@@ -24,8 +24,7 @@ var getOverlay = function() {
 };
 
 var getRecrunWindow = function() {
-    var iframe = document.getElementById(recrunId);
-    return iframe.contentWindow;
+    return getOverlay().contentWindow;
 };
 
 var getRecrunDoc = function() {
@@ -44,13 +43,53 @@ var recrunHide = function(id) {
     $(getRecrunElementById(id)).hide();
 };
 
+// keydown for ESC handled in iframe.js
+// here we handle UP and DOWN, which may sometimes be captured
+// by top frame (even after trying multiple ways to get iframe in focus)
+var disableScrollEvents = 'scroll mousewheel touchmove keydown';
+
+
+
+var disableScrollHandler = function(e) {
+    if (e.type === 'keydown') {
+        var ESC = 27;
+        var UP = 38;
+        var DOWN = 40;
+        var PGUP = 33;
+        var PGDOWN = 34;
+        var HOME = 36;
+        var END = 35;
+        var SPACE = 32;
+        var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
+        if (s.has(e.which)) {
+            var evt = new CustomEvent('key', {'detail': e.which});
+            getRecrunWindow().document.body.dispatchEvent(evt);   
+        } else {
+            return;
+        }
+    }
+    
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+};
+
+var disableScroll = function() {
+    $('html').on(disableScrollEvents, disableScrollHandler);
+};
+
+var enableScroll = function() {
+    $('html').off(disableScrollEvents, disableScrollHandler);
+};
+
 var overlay = null;
 var bPopup = function(callback) {
     overlay = $('#' + recrunId).bPopup({
         zIndex: 2147483647,
         position: ['auto', '0px'],
         positionStyle: 'fixed',
-        scrollBar2: false
+        onOpen: disableScroll,
+        onClose: enableScroll
     }, function() {
         var intervalId = setInterval(function() {
             if (getRecrunDoc().readyState === 'complete') {
@@ -89,10 +128,9 @@ var createOverlay = function() {
     iframe.style.display = 'none'; // don't make this !important, or it won't change
     
     setPropertyImp(iframe, 'padding', '6px');
-    setPropertyImp(iframe, 'margin-top', '1%');
-    setPropertyImp(iframe, 'margin-bottom', '1%');
     setPropertyImp(iframe, 'width', '800px');
     setPropertyImp(iframe, 'height', '95%');
+    setPropertyImp(iframe, 'top', '2%'); // 2% margin on top, 3% on bottom
     setPropertyImp(iframe, 'border-radius', '3px');
     setPropertyImp(iframe, 'background-color', '#f3f2ee');
     setPropertyImp(iframe, 'border', '1px solid #ccc');
@@ -298,5 +336,4 @@ chrome.runtime.onMessage.addListener(function(request) {
         resp = null; // reset saved state, so the next call will re-fetch
     }
 });
-
 

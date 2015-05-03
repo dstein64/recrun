@@ -23,38 +23,6 @@
         if (!o.scrollBar)
             $('html').css('overflow', 'hidden');
         
-        // keydown for ESC handled in iframe.js
-        // here we handle UP and DOWN, which may sometimes be captured
-        // by top frame (even after trying multiple ways to get iframe in focus)
-        var disableScrollEvents = 'scroll mousewheel touchmove keydown';
-        var disableScrollFn = function(e) {
-            if (e.type === 'keydown') {
-                var ESC = 27;
-                var UP = 38;
-                var DOWN = 40;
-                var PGUP = 33;
-                var PGDOWN = 34;
-                var HOME = 36;
-                var END = 35;
-                var SPACE = 32;
-                var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
-                if (s.has(e.which)) {
-                    var evt = new CustomEvent('key', {'detail': e.which});
-                    getRecrunWindow().document.body.dispatchEvent(evt);   
-                } else {
-                    return;
-                }
-            }
-            
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        };
-        
-        if (!o.scrollBar2) {
-            $('html').on(disableScrollEvents, disableScrollFn);
-        }
-        
         // VARIABLES    
         var $popup          = this
           , d               = $(document)
@@ -276,10 +244,6 @@
                 $('html').css('overflow', 'auto');
             }
             
-            if (!o.scrollBar2) {
-                $('html').off(disableScrollEvents, disableScrollFn);
-            }
-            
             $('.b-modal.'+id).unbind('click');
             d.unbind('keydown.'+id);
             $w.unbind('.'+id).data('bPopup', ($w.data('bPopup')-1 > 0) ? $w.data('bPopup')-1 : null);
@@ -401,7 +365,6 @@
         , position:         ['auto', 'auto'] // x, y,
         , positionStyle:    'absolute'// absolute or fixed
         , scrollBar:        true
-        , scrollBar2:       true
         , speed:            250 // open & close speed
         , transition:       'fadeIn' //transitions: fadeIn, slideDown, slideIn, slideBack
         , transitionClose:  false
