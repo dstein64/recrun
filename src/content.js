@@ -272,11 +272,13 @@ var fillOverlay = function() {
                         }
                     }
                 };
+                var fragment = doc.createDocumentFragment();
                 var children = htmldoc.body.childNodes;
                 for (var i = 0; i < children.length; i++) {
                     var child = children[i];
-                    rec(child, e);
+                    rec(child, fragment);
                 }
+                e.appendChild(fragment);
             }
             
         } else {
