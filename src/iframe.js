@@ -36,7 +36,7 @@ $(document).on('keydown', function(e) {
         // ignore these or else they'll get sent the top frame
         var ignore = false;
         var scrollElt = getScrollElt();
-        if (upSet.has(which) && scrollElt.scrollTop === 0) {
+        if (upSet.has(which) && scrollElt.scrollTop <= 0) {
             ignore = true;
         }
         
@@ -46,10 +46,23 @@ $(document).on('keydown', function(e) {
         }
         
         if (ignore) {
-            e.preventDefault();
-            e.stopPropagation();
+            // don't need e.preventDefault() or e.stopPropagation(), as their auto-implied
             return false;
         }
+    }
+});
+
+// bottom of page gets jumpy from scroll wheel. it goes one pixel below where it should.
+// this prevents that
+$(document).on('mousewheel', function(e) {
+    var wheelDelta = e.originalEvent.wheelDelta;
+    var scrollElt = getScrollElt();
+    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    if (wheelDelta < 0 && atBottom) { // wheelDelta < 0, when scrolling down
+        return false;
+    } else if (wheelDelta > 0 && scrollElt.scrollTop <= 0) {
+        // I haven't seen this be a problem, but handle just in case
+        return false;
     }
 });
 

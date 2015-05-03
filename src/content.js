@@ -68,6 +68,8 @@ var disableScrollHandler = function(e) {
     
     var amount = 0;
     var scrollElt = getRecrunElementById('scroll');
+    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    var atTop = scrollElt.scrollTop <= 0;
     
     if (type === 'keydown' && e.which === ESC) {
         overlay.close();
@@ -94,9 +96,13 @@ var disableScrollHandler = function(e) {
         }
         
     } else if (scrollMouseWheel) {
-        var w = 533;
         var wheelDelta = e.originalEvent.wheelDelta;
-        if (wheelDelta > 0)
+        if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyong boundary
+                || (wheelDelta > 0 && atTop)) {
+            return false;
+        }
+        var w = 533;
+        if (wheelDelta > 0) // wheelDelta > 0, when scrolling up
             w = -1 * w;
         amount = w;
     } else if (middleClick) {
