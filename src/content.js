@@ -96,15 +96,18 @@ var disableScrollHandler = function(e) {
         }
         
     } else if (scrollMouseWheel) {
-        var wheelDelta = e.originalEvent.wheelDelta;
+        var wheelDelta = e.originalEvent.wheelDeltaY;
         if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyong boundary
                 || (wheelDelta > 0 && atTop)) {
             return false;
         }
-        var w = 533;
-        if (wheelDelta > 0) // wheelDelta > 0, when scrolling up
-            w = -1 * w;
-        amount = w;
+        // this will cause scrolling speed to match mouse wheel scrolling
+        // with a mouse, but scrolling will be slightly faster with the Mac trackpad
+        // than it usually is.
+        amount = (-533/120) * wheelDelta;
+        // since can't currently get consistency, just turn off mouse
+        // wheel scrolling from border region
+        return false;
     } else if (middleClick) {
         // not sure how to capture scrolling from middle click, so just capture and block
         // so background page doesn't move

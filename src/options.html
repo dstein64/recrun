@@ -24,6 +24,7 @@ a.tooltip span {
     margin-top: -30px;
     margin-left: 14px;
     width: auto;
+    max-width: 300px;
     line-height: 16px;
 }
 a.tooltip:hover span {
@@ -50,7 +51,7 @@ Visit <a href="http://www.diffbot.com" target="_blank">diffbot.com</a> to sign u
 <br><br>
 Diffbot Token: <input id="token" type="text" name="token" size="35">
 <br><br>
-<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included.</span></a></label>
+<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource, determined by the corresponding <i>URL</i> specified in the Diffbot API response.</i></span></a></label>
 <br><br>
 <input type="checkbox" id="diffbot-html-checkbox"><label for="diffbot-html-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
 
