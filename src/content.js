@@ -336,7 +336,7 @@ var recrun = function() {
         }
     };
     
-    var TIMEOUT = 20000;
+    var TIMEOUT = 40000;
     
     if (resp) {
         bPopup(show);
