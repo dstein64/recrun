@@ -33,6 +33,7 @@ $(document).on('keydown', function(e) {
             return;
         }
         
+        // ignore these or else they'll get sent the top frame
         var ignore = false;
         var scroll = getScrollElt();
         if (upSet.has(which) && scroll.scrollTop === 0) {
