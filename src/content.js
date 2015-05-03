@@ -17,7 +17,7 @@ var getApiUrl = function(token, url) {
     return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
 
-var recrunId = '_recrun';
+var recrunId = '_recrun_2108a6f5-6bb4-4069-83ba-9e22d60b3f64';
 
 var getOverlay = function() {
     return document.getElementById(recrunId);
