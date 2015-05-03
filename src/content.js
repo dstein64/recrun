@@ -46,31 +46,71 @@ var recrunHide = function(id) {
 // keydown for ESC handled in iframe.js
 // here we handle UP and DOWN, which may sometimes be captured
 // by top frame (even after trying multiple ways to get iframe in focus)
-var disableScrollEvents = 'scroll mousewheel touchmove keydown';
+var disableScrollEvents = 'scroll mousewheel touchmove keydown mousedown';
 
-
-
-var disableScrollHandler = function(e) {
-    if (e.type === 'keydown') {
-        var ESC = 27;
-        var UP = 38;
-        var DOWN = 40;
-        var PGUP = 33;
-        var PGDOWN = 34;
-        var HOME = 36;
-        var END = 35;
-        var SPACE = 32;
-        var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
-        if (s.has(e.which)) {
-            var evt = new CustomEvent('key', {'detail': e.which});
-            getRecrunWindow().document.body.dispatchEvent(evt);   
-        } else {
-            return;
+var disableScrollHandler = function(e) {    
+    var type = e.type;
+    
+    var ESC = 27;
+    
+    var UP = 38;
+    var DOWN = 40;
+    var PGUP = 33;
+    var PGDOWN = 34;
+    var HOME = 36;
+    var END = 35;
+    var SPACE = 32;
+    var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
+    
+    var scrollKeyPress = type === 'keydown' && s.has(e.which);
+    var scrollMouseWheel = type === 'mousewheel';
+    var middleClick = type === 'mousedown' && e.which === 2;
+    
+    var amount = 0;
+    var scrollElt = getRecrunElementById('scroll');
+    
+    if (type === 'keydown' && e.which === ESC) {
+        overlay.close();
+        return;
+    } else if (scrollKeyPress) {
+        
+        var key = e.which;
+        
+        var n = 40;
+        var h = scrollElt.clientHeight * 0.85;
+        
+        if (key === UP) {
+            amount = -1 * n;
+        } else if (key === DOWN) {
+            amount = n;
+        } else if (key === SPACE || key === PGDOWN) {
+            amount = h;
+        } else if (key === PGUP) {
+            amount = -1 * h;
+        } else if (key === HOME) {
+            amount = -1 * scrollElt.scrollTop;
+        } else if (key === END) {
+            amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
         }
+        
+    } else if (scrollMouseWheel) {
+        var w = 533;
+        var wheelDelta = e.originalEvent.wheelDelta;
+        if (wheelDelta > 0)
+            w = -1 * w;
+        amount = w;
+    } else if (middleClick) {
+        // not sure how to capture scrolling from middle click, so just capture and block
+        // so background page doesn't move
+        return false;
+    } else {
+        return true;
     }
     
-    e.preventDefault();
-    e.stopPropagation();
+    var evt = new CustomEvent('scroll', {'detail': amount});
+    getRecrunWindow().document.body.dispatchEvent(evt);   
+    
+    // returning false calls e.preventDefault() and e.stopPropagation()
     return false;
 };
 

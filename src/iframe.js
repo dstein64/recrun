@@ -52,28 +52,9 @@ $(document).on('keydown', function(e) {
     }
 });
 
-document.body.addEventListener('key', function(e) {
+document.body.addEventListener('scroll', function(e) {
     var scroll = getScrollElt();
-    var amount = 0;
-    var n = 40;
-    var h = scroll.clientHeight * 0.85;
-    var key = e.detail;
-    if (key === UP) {
-        amount = -1 * n;
-    } else if (key === DOWN) {
-        amount = n;
-    } else if (key === SPACE || key === PGDOWN) {
-        amount = h;
-    } else if (key === PGUP) {
-        amount = -1 * h;
-    } else if (key === HOME) {
-        amount = -1 * scroll.scrollTop;
-    } else if (key === END) {
-        amount = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
-    } else if (key === ESC) {
-        sendClose();
-        return;
-    }
+    var amount = e.detail;
     scroll.scrollTop += amount;
 });
 
