@@ -247,17 +247,19 @@ var fillOverlay = function() {
                         recrunNode.appendChild(doc.createTextNode(text));
                     } else if (type === Node.ELEMENT_NODE) {
                         var tag = diffbotNode.tagName;
-                        if (allowedTags.has(tag.toLowerCase())) {
+                        var tagLower = tag.toLowerCase();
+                        if (allowedTags.has(tagLower)) {
                             var newElement = doc.createElement(tag);
                             
                             var attrs = diffbotNode.attributes;
                             for (var i = 0; i < attrs.length; i++) {
                                 var attr = attrs[i];
-                                if (allowerAttrs.get(tag.toLowerCase()).has(attr.name.toLowerCase())) {
-                                    newElement.setAttribute(attr.name.toLowerCase(), attr.value);
+                                var attrNameLower = attr.name.toLowerCase();
+                                if (allowerAttrs.has(tagLower) && allowerAttrs.get(tagLower).has(attrNameLower)) {
+                                    newElement.setAttribute(attrNameLower, attr.value);
                                 }
                             }
-                            if (tag.toLowerCase() === 'a') {
+                            if (tagLower === 'a') {
                                 newElement.setAttribute('target', '_blank');
                             }
                             
