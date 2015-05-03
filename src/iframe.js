@@ -35,13 +35,13 @@ $(document).on('keydown', function(e) {
         
         // ignore these or else they'll get sent the top frame
         var ignore = false;
-        var scroll = getScrollElt();
-        if (upSet.has(which) && scroll.scrollTop === 0) {
+        var scrollElt = getScrollElt();
+        if (upSet.has(which) && scrollElt.scrollTop === 0) {
             ignore = true;
         }
         
         if (downSet.has(which)
-                && (scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight)) {
+                && (scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight)) {
             ignore = true;
         }
         
