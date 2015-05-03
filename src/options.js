@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', restore_options);
 document.querySelector('#save').addEventListener('click', save_options);
 
 var ENTER = 13;
-document.body.addEventListener("keydown", function(e) {
+document.addEventListener("keydown", function(e) {
     if (e.which === ENTER) {
         save_options();
         return false;
