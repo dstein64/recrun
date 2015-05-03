@@ -197,6 +197,72 @@ var overlayOpen = function() {
     return overlay && (document.getElementsByClassName('b-modal').length > 0);
 };
 
+var sanitize = function(htmlString, rootNode) {
+    var parser = new DOMParser();
+    var htmldoc = parser.parseFromString(htmlString, "text/html");
+    var doc = rootNode.ownerDocument;
+    
+    // from https://diffbot.com/dev/docs/article/html/
+    // block elements
+    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
+                        'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
+    // inline elements (following specs, although I usually treat <br> as block)
+    allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
+    // media
+    if (options.media) {
+        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
+    }
+    var allowedTags = new Set(allowedTagsL);
+    var allowerAttrs = new Map();
+    allowerAttrs.set('td', new Set(['valign', 'colspan']));
+    allowerAttrs.set('a', new Set(['href']));
+    allowerAttrs.set('img', new Set(['src', 'alt']));
+    allowerAttrs.set('video', new Set(['src']));
+    allowerAttrs.set('audio', new Set(['src']));
+    allowerAttrs.set('iframe', new Set(['src', 'frameborder']));
+    allowerAttrs.set('embed', new Set(['src', 'type']));
+    allowerAttrs.set('object', new Set(['src', 'type']));
+    
+    // 'rec' as in 'recursive', not 'rec' as in 'recrun'
+    var rec = function(diffbotNode, recrunNode) {
+        var type = diffbotNode.nodeType;
+        if (type === Node.TEXT_NODE) {
+            var text = diffbotNode.textContent;
+            recrunNode.appendChild(doc.createTextNode(text));
+        } else if (type === Node.ELEMENT_NODE) {
+            var tag = diffbotNode.tagName;
+            var tagLower = tag.toLowerCase();
+            if (allowedTags.has(tagLower)) {
+                var newElement = doc.createElement(tag);
+                
+                var attrs = diffbotNode.attributes;
+                for (var i = 0; i < attrs.length; i++) {
+                    var attr = attrs[i];
+                    var attrNameLower = attr.name.toLowerCase();
+                    if (allowerAttrs.has(tagLower) && allowerAttrs.get(tagLower).has(attrNameLower)) {
+                        newElement.setAttribute(attrNameLower, attr.value);
+                    }
+                }
+                if (tagLower === 'a') {
+                    newElement.setAttribute('target', '_blank');
+                }
+                
+                recrunNode.appendChild(newElement);
+                var _children = diffbotNode.childNodes;
+                for (var i = 0; i < _children.length; i++) {
+                    var _child = _children[i];
+                    rec(_child, newElement);
+                }
+            }
+        }
+    };
+    var children = htmldoc.body.childNodes;
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        rec(child, rootNode);
+    }
+};
+
 var fillOverlay = function() {
     var doc = getRecrunDoc(); // recrun document
     var article = resp[0];
@@ -209,112 +275,56 @@ var fillOverlay = function() {
         }
     }
     
-    var e = getRecrunElementById('recrun-html');
+    var contentFrag = doc.createDocumentFragment();
     
-    if (e && doc) {
-        if (options.diffbotHtml) {    
+    // first add primary content
+    if (options.diffbotHtml) {
+        if ('html' in article) {
+            // create recrun content from Diffbot's html field
+            var htmlString = article['html'];
+            
             // can inject with innerHtml, and then clean up
             // I prefer this approach
             // generally, this approach protects against malicious and/or malformed html
-            if ('html' in article) {
-                // create recrun content from Diffbot's html field
-                var parser = new DOMParser();
-                var html = article['html'];
-                var htmldoc = parser.parseFromString(html, "text/html");
-                
-                // from https://diffbot.com/dev/docs/article/html/
-                // block elements
-                var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
-                                    'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
-                // inline elements (following specs, although I usually treat <br> as block)
-                allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
-                // media
-                if (options.media) {
-                    allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
-                }
-                var allowedTags = new Set(allowedTagsL);
-                var allowerAttrs = new Map();
-                allowerAttrs.set('td', new Set(['valign', 'colspan']));
-                allowerAttrs.set('a', new Set(['href']));
-                allowerAttrs.set('img', new Set(['src', 'alt']));
-                allowerAttrs.set('video', new Set(['src']));
-                allowerAttrs.set('audio', new Set(['src']));
-                allowerAttrs.set('iframe', new Set(['src', 'frameborder']));
-                allowerAttrs.set('embed', new Set(['src', 'type']));
-                allowerAttrs.set('object', new Set(['src', 'type']));
-                
-                // 'rec' as in 'recursive', not 'rec' as in 'recrun'
-                var rec = function(diffbotNode, recrunNode) {
-                    var type = diffbotNode.nodeType;
-                    if (type === Node.TEXT_NODE) {
-                        var text = diffbotNode.textContent;
-                        recrunNode.appendChild(doc.createTextNode(text));
-                    } else if (type === Node.ELEMENT_NODE) {
-                        var tag = diffbotNode.tagName;
-                        var tagLower = tag.toLowerCase();
-                        if (allowedTags.has(tagLower)) {
-                            var newElement = doc.createElement(tag);
-                            
-                            var attrs = diffbotNode.attributes;
-                            for (var i = 0; i < attrs.length; i++) {
-                                var attr = attrs[i];
-                                var attrNameLower = attr.name.toLowerCase();
-                                if (allowerAttrs.has(tagLower) && allowerAttrs.get(tagLower).has(attrNameLower)) {
-                                    newElement.setAttribute(attrNameLower, attr.value);
-                                }
-                            }
-                            if (tagLower === 'a') {
-                                newElement.setAttribute('target', '_blank');
-                            }
-                            
-                            recrunNode.appendChild(newElement);
-                            var _children = diffbotNode.childNodes;
-                            for (var i = 0; i < _children.length; i++) {
-                                var _child = _children[i];
-                                rec(_child, newElement);
-                            }
-                        }
-                    }
-                };
-                var fragment = doc.createDocumentFragment();
-                var children = htmldoc.body.childNodes;
-                for (var i = 0; i < children.length; i++) {
-                    var child = children[i];
-                    rec(child, fragment);
-                }
-                e.appendChild(fragment);
-            }
             
-        } else {
-            // create recrun content from Diffbot's text field
-            if (options.media && 'images' in article) {
-                var images = article['images'];
-                for (var i = 0; i < images.length; i++) {
-                    var image = images[i];
-                    if ('primary' in image
-                            && image['primary'] === true
-                            && 'url' in image
-                            && (image['url'].startsWith('http://')
-                                    || image['url'].startsWith('https://'))) {
-                        var img = doc.createElement('img');
-                        img.src = image['url'];
-                        e.appendChild(img);
-                        break;
-                    }
+            sanitize(htmlString, contentFrag);
+        }
+        
+    } else {
+        // create recrun content from Diffbot's text field
+        // starting with one primary
+        if (options.media && 'images' in article) {
+            var images = article['images'];
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                if ('primary' in image
+                        && image['primary'] === true
+                        && 'url' in image
+                        && (image['url'].startsWith('http://')
+                                || image['url'].startsWith('https://'))) {
+                    var img = doc.createElement('img');
+                    img.src = image['url'];
+                    contentFrag.appendChild(img);
+                    break;
                 }
             }
-            
-            if ('text' in article) {
-                var text = article['text'];
-                var paragraphs = text.split(/\n/g);
-                for (var i = 0; i < paragraphs.length; i++) {
-                    var p = doc.createElement('p');
-                    p.appendChild(doc.createTextNode(paragraphs[i]));
-                    e.appendChild(p);
-                }
+        }
+        
+        if ('text' in article) {
+            var text = article['text'];
+            var paragraphs = text.split(/\n/g);
+            for (var i = 0; i < paragraphs.length; i++) {
+                var p = doc.createElement('p');
+                p.appendChild(doc.createTextNode(paragraphs[i]));
+                contentFrag.appendChild(p);
             }
-        }   
+        }
     }
+    
+    // next add discussion
+    
+    var e = getRecrunElementById('recrun-html');
+    e.appendChild(contentFrag);
 };
 
 var recrun = function() {
