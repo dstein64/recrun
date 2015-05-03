@@ -124,13 +124,16 @@ var fillOverlay = function() {
     var e = getRecrunElementById('recrun-html');
     
     if (e && doc) {
-        //if (options.diffbotHtml) {
-        if (false) {    
+        if (options.diffbotHtml) {    
             if ('html' in article) {
                 // create recrun content from Diffbot's html field
                 var parser = new DOMParser();
                 var html = article['html'];
                 var htmldoc = parser.parseFromString(html, "text/html");
+                var rec = function(diffbotNode, recrunNode) {
+                    
+                };
+                
             }                    
             
         } else {

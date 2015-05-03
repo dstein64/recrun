@@ -29,15 +29,14 @@
         var disableScrollEvents = 'scroll mousewheel touchmove keydown';
         var disableScrollFn = function(e) {
             if (e.type === 'keydown') {
-                console.log(e.which);
                 var ESC = 27;
                 var UP = 38;
                 var DOWN = 40;
-                var PGDOWN = 34;
                 var PGUP = 33;
-                var SPACE = 32;
+                var PGDOWN = 34;
                 var HOME = 36;
                 var END = 35;
+                var SPACE = 32;
                 var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
                 if (s.has(e.which)) {
                     var evt = new CustomEvent('key', {'detail': e.which});

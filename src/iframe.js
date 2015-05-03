@@ -7,15 +7,22 @@ _close.onclick = function() {
     sendClose();
 };
 
+var getScrollElt = function() {
+    return document.getElementById('scroll');
+};
+
 var ESC = 27;
 
 var UP = 38;
 var DOWN = 40;
-var PGDOWN = 34;
 var PGUP = 33;
-var SPACE = 32;
+var PGDOWN = 34;
 var HOME = 36;
 var END = 35;
+var SPACE = 32;
+
+var upSet = new Set([UP, PGUP, HOME]);
+var downSet = new Set([DOWN, PGDOWN, END, SPACE]);
 
 $(document).on('keydown', function(e) {
     var type = e.type;
@@ -23,12 +30,30 @@ $(document).on('keydown', function(e) {
         var which = e.which;
         if (which === ESC) {
             sendClose();
+            return;
+        }
+        
+        var ignore = false;
+        var scroll = getScrollElt();
+        if (upSet.has(which) && scroll.scrollTop === 0) {
+            ignore = true;
+        }
+        
+        if (downSet.has(which)
+                && (scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight)) {
+            ignore = true;
+        }
+        
+        if (ignore) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
         }
     }
 });
 
 document.body.addEventListener('key', function(e) {
-    var scroll = document.getElementById('scroll');
+    var scroll = getScrollElt();
     var amount = 0;
     var n = 40;
     var h = scroll.clientHeight * 0.85;
