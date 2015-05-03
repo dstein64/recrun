@@ -349,6 +349,7 @@ var recrun = function() {
                 var xhr = new XMLHttpRequest();
                 var apiUrl = getApiUrl(options.token, url);
                 xhr.open("GET", apiUrl, true);
+                xhr.timeout = 20000;
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
                         var status = xhr.status;
@@ -370,6 +371,9 @@ var recrun = function() {
                         }
                         show();
                     }
+                };
+                xhr.ontimeout = function () {
+                    show();
                 };
                 xhr.send();
             }
