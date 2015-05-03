@@ -176,7 +176,8 @@ var createOverlay = function() {
     
     iframe.style.display = 'none'; // don't make this !important, or it won't change
     
-    setPropertyImp(iframe, 'padding', '6px');
+    setPropertyImp(iframe, 'padding', '0px');
+    setPropertyImp(iframe, 'margin', '0px');
     setPropertyImp(iframe, 'width', '800px');
     setPropertyImp(iframe, 'height', '95%');
     setPropertyImp(iframe, 'top', '2%'); // 2% margin on top, 3% on bottom

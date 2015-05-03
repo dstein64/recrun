@@ -1,3 +1,8 @@
+body {
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+
 #recrun-close {
 	font: bold 20px sans-serif;
 	padding-left: 6px;
