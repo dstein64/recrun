@@ -51,6 +51,8 @@ $(document).on('keydown mousedown', function(e) {
         }
     } else if (type === 'mousedown') {
         // disable middle click scrolling. on your desktop, it sometimes freezes the tab (???)
+        // also now that you've reverted back to keeping the host page's scroll bar, this will prevent
+        // the scenario where a wheel scroll can't continue in the overlay and gets captured by the host
         if (e.which === 2)
             return false;
     }
