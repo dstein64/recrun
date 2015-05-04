@@ -19,7 +19,7 @@ body {
 	text-decoration: none;
 }
 
-#recrun-container {
+div#recrun-container {
 	font-family: georgia, 'times new roman', times, serif;
 	width: 600px;
 	margin-left: auto;
@@ -45,10 +45,33 @@ body {
 #recrun-author, #recrun-date {
 	text-align: left;
 	display: block;
-	font-size: 14px;
+	font-size: 16px;
 	color: gray;
 	line-height: 17px;
 	font-family: arial, helvetica, sans-serif;
+}
+
+div.post {
+	margin-bottom: 25px;
+}
+
+div.postAuthor, div.postDate {
+	display: inline-block;
+}
+
+div.postAuthor {
+	font-size: 16px;
+	margin-right: 5px;
+}
+
+div.postDate {
+	color: gray;
+	font-size: 14px;
+}
+
+div.postContent {
+	padding: 0;
+	margin: 0;
 }
 
 #recrun-html {

@@ -12,7 +12,8 @@ var statusMessage = function(message, time) {
     curTimer = timer;
 };
 
-var checkboxes = ['media', 'comments', 'diffbotHtml'];
+//var checkboxes = ['media', 'comments', 'diffbotHtml'];
+var checkboxes = ['media', 'diffbotHtml'];
 
 var saveOptions = function() {
     var options = Object.create(null);

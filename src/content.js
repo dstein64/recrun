@@ -325,8 +325,65 @@ var fillOverlay = function() {
     
     // next add discussion
     
+    // TODO: indent comments based on parent/child relationships
+    
+    var commentsFrag = doc.createDocumentFragment();
+    // comments currently disabled
+    if (false && options.comments && ('discussion' in article)) {
+        var discussion = article['discussion'];
+        if ('posts' in discussion) {
+            var posts = discussion['posts'];
+            if (posts.length > 0) {
+                var commentsHeader = doc.createElement('h2');
+                commentsHeader.appendChild(doc.createTextNode('Comments'));
+                commentsFrag.appendChild(commentsHeader);
+                for (var i = 0; i < posts.length; i++) {
+                    var post = posts[i];
+                    var postDiv = doc.createElement('div');
+                    postDiv.classList.add('post');
+                    
+                    if ('author' in post) {
+                        var postAuthorDiv = doc.createElement('div');
+                        postAuthorDiv.classList.add('postAuthor');
+                        postAuthorDiv.appendChild(doc.createTextNode(post['author']));
+                        postDiv.appendChild(postAuthorDiv);
+                    }
+                    
+                    if ('date' in post) {
+                        var postDateDiv = doc.createElement('div');
+                        postDateDiv.classList.add('postDate');
+                        postDateDiv.appendChild(doc.createTextNode(post['date']));
+                        postDiv.appendChild(postDateDiv);
+                    }
+                    
+                    var postContentDiv = doc.createElement('div');
+                    postContentDiv.classList.add('postContent');
+                    if (options.diffbotHtml) {
+                        if ('html' in post) {
+                            var htmlPostString = post['html'];
+                            sanitize(htmlPostString, postContentDiv);
+                        }
+                    } else if ('text' in post) {
+                        var postP = doc.createElement('p');
+                        postP.appendChild(doc.createTextNode(post['text']));
+                        postContentDiv.appendChild(postP);
+                    }
+                    
+                    if (!('parentId' in post) && i < posts.length-1) {
+                        var postSep = doc.createElement('hr');
+                        postContentDiv.appendChild(postSep);
+                    }
+                    
+                    postDiv.appendChild(postContentDiv);
+                    commentsFrag.appendChild(postDiv);
+                }
+            }
+        }
+    }
+    
     var e = getRecrunElementById('recrun-html');
     e.appendChild(contentFrag);
+    e.appendChild(commentsFrag);
 };
 
 var recrun = function() {
