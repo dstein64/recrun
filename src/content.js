@@ -73,7 +73,7 @@ var disableScrollHandler = function(e) {
  
  if (type === 'keydown' && e.which === ESC) {
      overlay.close();
-     return;
+     return false;
  } else if (scrollKeyPress) {
      
      var key = e.which;
