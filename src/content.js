@@ -43,103 +43,18 @@ var recrunHide = function(id) {
     $(getRecrunElementById(id)).hide();
 };
 
-// keydown for ESC handled in iframe.js
-// here we handle UP and DOWN, which may sometimes be captured
-// by top frame (even after trying multiple ways to get iframe in focus)
-var disableScrollEvents = 'scroll mousewheel touchmove keydown mousedown';
-
-var disableScrollHandler = function(e) {    
-    var type = e.type;
-    
-    var ESC = 27;
-    
-    var UP = 38;
-    var DOWN = 40;
-    var PGUP = 33;
-    var PGDOWN = 34;
-    var HOME = 36;
-    var END = 35;
-    var SPACE = 32;
-    var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
-    
-    var scrollKeyPress = type === 'keydown' && s.has(e.which);
-    var scrollMouseWheel = type === 'mousewheel';
-    var middleClick = type === 'mousedown' && e.which === 2;
-    
-    var amount = 0;
-    var scrollElt = getRecrunElementById('scroll');
-    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
-    var atTop = scrollElt.scrollTop <= 0;
-    
-    if (type === 'keydown' && e.which === ESC) {
-        overlay.close();
-        return;
-    } else if (scrollKeyPress) {
-        
-        var key = e.which;
-        
-        var n = 40;
-        var h = scrollElt.clientHeight * 0.85;
-        
-        if (key === UP) {
-            amount = -1 * n;
-        } else if (key === DOWN) {
-            amount = n;
-        } else if (key === SPACE || key === PGDOWN) {
-            amount = h;
-        } else if (key === PGUP) {
-            amount = -1 * h;
-        } else if (key === HOME) {
-            amount = -1 * scrollElt.scrollTop;
-        } else if (key === END) {
-            amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
-        }
-        
-    } else if (scrollMouseWheel) {
-        var wheelDelta = e.originalEvent.wheelDeltaY;
-        if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyong boundary
-                || (wheelDelta > 0 && atTop)) {
-            return false;
-        }
-        // this will cause scrolling speed to match mouse wheel scrolling
-        // with a mouse, but scrolling will be slightly faster with the Mac trackpad
-        // than it usually is.
-        amount = (-533/120) * wheelDelta;
-        // since can't currently get consistency, just turn off mouse
-        // wheel scrolling from border region
-        return false;
-    } else if (middleClick) {
-        // not sure how to capture scrolling from middle click, so just capture and block
-        // so background page doesn't move
-        return false;
-    } else {
-        return true;
-    }
-    
-    var evt = new CustomEvent('scroll', {'detail': amount});
-    getRecrunWindow().document.body.dispatchEvent(evt);   
-    
-    // returning false calls e.preventDefault() and e.stopPropagation()
-    return false;
-};
-
-var disableScroll = function() {
-    $('html').on(disableScrollEvents, disableScrollHandler);
-};
-
-var enableScroll = function() {
-    $('html').off(disableScrollEvents, disableScrollHandler);
-};
-
 var overlay = null;
 var bPopup = function(callback) {
-    overlay = $('#' + recrunId).bPopup({
+    var options = {
         zIndex: 2147483647,
         position: ['auto', '0px'],
-        positionStyle: 'fixed',
-        onOpen: disableScroll,
-        onClose: enableScroll
-    }, function() {
+        positionStyle: 'fixed'
+    };
+    if ($(document).height() > $(window).height()) {
+        options['scrollBar2'] = false;
+    }
+    
+    overlay = $('#' + recrunId).bPopup(options, function() {
         var intervalId = setInterval(function() {
             if (getRecrunDoc().readyState === 'complete') {
                 clearInterval(intervalId);

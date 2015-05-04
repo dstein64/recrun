@@ -24,7 +24,7 @@ var SPACE = 32;
 var upSet = new Set([UP, PGUP, HOME]);
 var downSet = new Set([DOWN, PGDOWN, END, SPACE]);
 
-$(document).on('keydown', function(e) {
+$(document).on('keydown mousedown', function(e) {
     var type = e.type;
     if (type === 'keydown') {
         var which = e.which;
@@ -49,6 +49,10 @@ $(document).on('keydown', function(e) {
             // don't need e.preventDefault() or e.stopPropagation(), as their auto-implied
             return false;
         }
+    } else if (type === 'mousedown') {
+        // disable middle click scrolling. on your desktop, it sometimes freezes the tab (???)
+        if (e.which === 2)
+            return false;
     }
 });
 

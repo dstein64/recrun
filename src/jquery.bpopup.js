@@ -23,6 +23,12 @@
         if (!o.scrollBar)
             $('html').css('overflow', 'hidden');
         
+        if (!o.scrollBar2) {
+            $('html').css('position', 'fixed');
+            $('html').css('overflow-y', 'scroll');
+            $('html').css('width', '100%');
+        }
+        
         // VARIABLES    
         var $popup          = this
           , d               = $(document)
@@ -244,6 +250,12 @@
                 $('html').css('overflow', 'auto');
             }
             
+            if (!o.scrollBar2) {
+                $('html').css('position', '');
+                $('html').css('overflow-y', '');
+                $('html').css('width', '');
+            }
+            
             $('.b-modal.'+id).unbind('click');
             d.unbind('keydown.'+id);
             $w.unbind('.'+id).data('bPopup', ($w.data('bPopup')-1 > 0) ? $w.data('bPopup')-1 : null);
@@ -365,6 +377,7 @@
         , position:         ['auto', 'auto'] // x, y,
         , positionStyle:    'absolute'// absolute or fixed
         , scrollBar:        true
+        , scrollBar2:       true
         , speed:            250 // open & close speed
         , transition:       'fadeIn' //transitions: fadeIn, slideDown, slideIn, slideBack
         , transitionClose:  false
