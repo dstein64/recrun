@@ -48,11 +48,9 @@ var bPopup = function(callback) {
     var options = {
         zIndex: 2147483647,
         position: ['auto', '0px'],
-        positionStyle: 'fixed'
+        positionStyle: 'fixed',
+        scrollBar2: false
     };
-    if ($(document).height() > $(window).height()) {
-        options['scrollBar2'] = false;
-    }
     
     overlay = $('#' + recrunId).bPopup(options, function() {
         var intervalId = setInterval(function() {

@@ -23,7 +23,8 @@
         if (!o.scrollBar)
             $('html').css('overflow', 'hidden');
         
-        if (!o.scrollBar2) {
+        var barExists = $(document).height() > $(window).height();
+        if (!o.scrollBar2 && barExists) {
             $('html').css('position', 'fixed');
             $('html').css('overflow-y', 'scroll');
             $('html').css('width', '100%');
@@ -250,7 +251,7 @@
                 $('html').css('overflow', 'auto');
             }
             
-            if (!o.scrollBar2) {
+            if (!o.scrollBar2 && barExists) {
                 $('html').css('position', '');
                 $('html').css('overflow-y', '');
                 $('html').css('width', '');
