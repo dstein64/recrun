@@ -17,6 +17,7 @@ var defaultOptions = function() {
     var options = Object.create(null);
     options['token'] = '';
     options['media'] = true;
+    options['comments'] = false;
     options['diffbotHtml'] = true;
     return options;
 };
@@ -30,14 +31,12 @@ var defaultOptions = function() {
     
     var defaults = defaultOptions();
     
-    if (!('token' in opts))
-        opts['token'] = defaults['token'];
-    
-    if (!('media' in opts))
-        opts['media'] = defaults['media'];
-    
-    if (!('diffbotHtml' in opts))
-        opts['diffbotHtml'] = defaults['diffbotHtml'];
+    var keys = Object.keys(defaults);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (!(key in opts))
+            opts[key] = defaults[key];
+    }
     
     localStorage["options"] = JSON.stringify(opts);
 })();

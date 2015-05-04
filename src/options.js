@@ -12,15 +12,18 @@ var statusMessage = function(message, time) {
     curTimer = timer;
 };
 
+var checkboxes = ['media', 'comments', 'diffbotHtml'];
+
 var saveOptions = function() {
-    var tokenInput = document.getElementById("token").value;
-    var media = document.getElementById('media-checkbox').checked;
-    var diffbotHtml = document.getElementById('diffbot-html-checkbox').checked;
-    
     var options = Object.create(null);
+    
+    var tokenInput = document.getElementById("token").value;
     options['token'] = tokenInput;
-    options['media'] = media;
-    options['diffbotHtml'] = diffbotHtml;
+    
+    for (var i = 0; i < checkboxes.length; i++) {
+        var checkbox = checkboxes[i];
+        options[checkbox] =  document.getElementById(checkbox + '-checkbox').checked;
+    }
     
     localStorage["options"] = JSON.stringify(options);
     
@@ -41,11 +44,10 @@ var loadOptions = function(opts) {
     var tokenInput = document.getElementById("token");
     tokenInput.value = token;
     
-    var media = opts['media'];
-    document.getElementById('media-checkbox').checked = media;
-    
-    var diffbotHtml = opts['diffbotHtml'];
-    document.getElementById('diffbot-html-checkbox').checked = diffbotHtml;
+    for (var i = 0; i < checkboxes.length; i++) {
+        var checkbox = checkboxes[i];
+        document.getElementById(checkbox + '-checkbox').checked = opts[checkbox];
+    }
 };
 
 // restore saved options

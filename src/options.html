@@ -8,6 +8,10 @@
     margin-left: auto;
     margin-right: auto;
 }
+#checkboxes {
+    line-height: 200%;
+}
+
 body {
     margin-top: 20px;
 }
@@ -51,10 +55,13 @@ Visit <a href="http://www.diffbot.com" target="_blank">diffbot.com</a> to sign u
 <br><br>
 Diffbot Token: <input id="token" type="text" name="token" size="35">
 <br><br>
-<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource, determined by the corresponding <i>URL</i> specified in the Diffbot API response.</i></span></a></label>
-<br><br>
-<input type="checkbox" id="diffbot-html-checkbox"><label for="diffbot-html-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
-
+<div id="checkboxes">
+	<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource, determined by the corresponding <i>URL</i> specified in the Diffbot API response.</i></span></a></label>
+	<br>
+	<input type="checkbox" id="comments-checkbox"><label for="comments-checkbox">Comments</label>
+	<br>
+	<input type="checkbox" id="diffbotHtml-checkbox"><label for="diffbotHtml-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
+</div>
 <br><br>
 <button id="defaults">Defaults</button>
 <button id="save">Save</button>
