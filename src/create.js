@@ -14,4 +14,5 @@ var createUniqueId = function() {
 };
 
 recrunId = createUniqueId();
-createOverlay();
+if (recrunId)
+    createOverlay();
