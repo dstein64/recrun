@@ -131,11 +131,14 @@ var enableScroll = function() {
  $('html').off(disableScrollEvents, disableScrollHandler);
 };
 
+var vHeight = '95%';
+var vPos = '2%'; // 2% margin on top, 3% on bottom
+
 var overlay = null;
 var bPopup = function(callback) {
     var options = {
         zIndex: 2147483647,
-        position: ['auto', '0px'],
+        position: ['auto', vPos + ' !important'],
         positionStyle: 'fixed',
         onOpen: disableScroll,
         onClose: enableScroll
@@ -181,8 +184,8 @@ var createOverlay = function() {
     setPropertyImp(iframe, 'padding', '0px');
     setPropertyImp(iframe, 'margin', '0px');
     setPropertyImp(iframe, 'width', '800px');
-    setPropertyImp(iframe, 'height', '95%');
-    setPropertyImp(iframe, 'top', '2%'); // 2% margin on top, 3% on bottom
+    setPropertyImp(iframe, 'height', vHeight);
+    setPropertyImp(iframe, 'top', vPos);
     setPropertyImp(iframe, 'border-radius', '3px');
     setPropertyImp(iframe, 'background-color', '#f3f2ee');
     setPropertyImp(iframe, 'border', '1px solid #ccc');
