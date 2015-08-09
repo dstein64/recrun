@@ -6,13 +6,18 @@
               "src/content.js" ],
       "matches": [ "*://*/*" ],
       "all_frames": false
+   }, {
+      "run_at": "document_end",
+      "js": [ "src/create.js" ],
+      "matches": [ "*://*/*" ],
+      "all_frames": false
    } ],
    "options_page": "src/options.html",
    "description": "Retain essential content, remove unwanted noise.",
    "manifest_version": 2,
    "name": "recrun",
    "permissions": [ "tabs" ],
-   "version": "2.0.6",
+   "version": "2.0.7",
    "browser_action": {
       "default_icon": "icons/icon38.png"
    },
