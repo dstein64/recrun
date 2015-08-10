@@ -187,7 +187,12 @@ var bPopup = function(callback) {
             // iframe may not be ready yet. Couldn't find a more reliable way to
             // check, so poll (onload was firing too soon)
             var ready = function() {
-                return !!getRecrunElementById('recrun-container');
+                //return !!getRecrunElementById('recrun-container');
+                try {
+                    return getRecrunDoc().readyState === 'complete';
+                } catch (err) {
+                    return !!getRecrunElementById('recrun-container');
+                }
             }
             if (ready()) {
                 callback();
