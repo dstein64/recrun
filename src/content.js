@@ -191,6 +191,7 @@ var bPopup = function(callback) {
                 try {
                     return getRecrunDoc().readyState === 'complete';
                 } catch (err) {
+                    // haven't seen an error thrown above, but this is just in case (may not be possible)
                     return !!getRecrunElementById('recrun-container');
                 }
             }
