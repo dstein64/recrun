@@ -193,7 +193,8 @@ var createOverlay = function() {
     setPropertyImp(iframe, 'background-color', '#f3f2ee');
     setPropertyImp(iframe, 'border', '1px solid #ccc');
     
-    body.appendChild(iframe);
+    // append to <html> instead of <body>. Less chance of interfering.
+    document.documentElement.appendChild(iframe);
     return iframe;
 };
 
