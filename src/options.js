@@ -49,6 +49,9 @@ var loadOptions = function(opts) {
         var checkbox = checkboxes[i];
         document.getElementById(checkbox + '-checkbox').checked = opts[checkbox];
     }
+    
+    if (!token)
+        tokenInput.focus();
 };
 
 // restore saved options
