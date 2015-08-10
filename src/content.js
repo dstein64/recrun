@@ -164,7 +164,6 @@ var bPopup = function(callback) {
     recrunId = createUniqueId();
     if (recrunId) {
         var iframe = createOverlay();
-        appendTo.appendChild(iframe);
         
         var options = {
                 zIndex: 2147483647,
@@ -172,9 +171,6 @@ var bPopup = function(callback) {
                 appendTo: appendTo,
                 positionStyle: 'fixed',                    
                 onOpen: function() {
-                    var src = 'src/iframe.html';
-                    var hash = '#' + encodeURIComponent(location.href);
-                    iframe.src = chrome.extension.getURL(src + hash);
                     disableScroll();
                 },
                 onClose: function() {
@@ -183,6 +179,8 @@ var bPopup = function(callback) {
                     appendTo.removeChild(iframe);
                 }
             };
+        
+        appendTo.appendChild(iframe);
         
         overlay = $('#' + recrunId).bPopup(options, function() {
             // in some cases, especially when host page is still loading,
@@ -263,6 +261,10 @@ var createOverlay = function() {
     var body = document.body;
     
     var iframe = document.createElement('iframe');
+    var src = 'src/iframe.html';
+    var hash = '#' + encodeURIComponent(location.href);
+    iframe.src = chrome.extension.getURL(src + hash);
+    
     iframe.setAttribute('id', recrunId);
     
     iframe.style.display = 'none'; // don't make this !important, or it won't change
