@@ -164,30 +164,50 @@ var bPopup = function(callback) {
     recrunId = createUniqueId();
     if (recrunId) {
         var iframe = createOverlay();
-        var flag = false;
-        iframe.onload = function() {
-            // you saw multiple onload firings
-            if (flag)
-                return;
-            else
-                flag = true;
-            var options = {
-                    zIndex: 2147483647,
-                    position: ['auto', vPos + ' !important'],
-                    appendTo: appendTo,
-                    positionStyle: 'fixed',                    
-                    onOpen: disableScroll,
-                    onClose: function() {
-                        active = false;
-                        enableScroll();
-                        appendTo.removeChild(iframe);
-                    }
-                };
-            
-            overlay = $('#' + recrunId).bPopup(options, callback);
-        };
-        active = true;
         appendTo.appendChild(iframe);
+        
+        var options = {
+                zIndex: 2147483647,
+                position: ['auto', vPos + ' !important'],
+                appendTo: appendTo,
+                positionStyle: 'fixed',                    
+                onOpen: function() {
+                    var src = 'src/iframe.html';
+                    var hash = '#' + encodeURIComponent(location.href);
+                    iframe.src = chrome.extension.getURL(src + hash);
+                    disableScroll();
+                },
+                onClose: function() {
+                    active = false;
+                    enableScroll();
+                    appendTo.removeChild(iframe);
+                }
+            };
+        
+        overlay = $('#' + recrunId).bPopup(options, function() {
+            // in some cases, especially when host page is still loading,
+            // iframe may not be ready yet. Couldn't find a more reliable way to
+            // check, so poll (onload was firing too soon)
+            var ready = function() {
+                return !!getRecrunElementById('recrun-container');
+            }
+            if (ready()) {
+                callback();
+            } else {
+                var cbIntervalId = setInterval(function() {
+                    if (!active) {
+                        clearInterval(cbIntervalId);
+                        return;
+                    }
+                    if (ready()) {
+                        callback();
+                        clearInterval(cbIntervalId);
+                    }
+                }, 100);
+            }
+        });
+        
+        active = true;
         
         // error checker
         // checks for errors every $rate milliseconds, while recrun is active.
@@ -243,9 +263,6 @@ var createOverlay = function() {
     var body = document.body;
     
     var iframe = document.createElement('iframe');
-    var src = 'src/iframe.html';
-    var hash = '#' + encodeURIComponent(location.href);
-    iframe.src = chrome.extension.getURL(src + hash);
     iframe.setAttribute('id', recrunId);
     
     iframe.style.display = 'none'; // don't make this !important, or it won't change
@@ -462,10 +479,13 @@ var closeOverlay = function() {
 };
 
 var recrun = function() {
+    // the callback interval (cbIntervalId) above makes the following seemingly unnecessary
+    /*
     if (document.readyState !== 'complete') {
         alert('Please wait for the page to finish loading');
         return;
     }
+    */
     
     if (isOverlayOpen()) {
         closeOverlay();
