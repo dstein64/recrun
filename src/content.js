@@ -20,6 +20,10 @@ var getApiUrl = function(token, url) {
 // gets initialized in create.js
 var recrunId = null;
 
+// append to <html> instead of <body>. Less chance of interfering.
+// creates html that's not valid, but it works...
+var appendTo = document.documentElement;
+
 var getOverlay = function() {
 	if (recrunId)
 		return document.getElementById(recrunId);
@@ -143,6 +147,7 @@ var bPopup = function(callback) {
     var options = {
         zIndex: 2147483647,
         position: ['auto', vPos + ' !important'],
+        appendTo: appendTo,
         positionStyle: 'fixed',
         onOpen: disableScroll,
         onClose: enableScroll
@@ -193,8 +198,7 @@ var createOverlay = function() {
     setPropertyImp(iframe, 'background-color', '#f3f2ee');
     setPropertyImp(iframe, 'border', '1px solid #ccc');
     
-    // append to <html> instead of <body>. Less chance of interfering.
-    document.documentElement.appendChild(iframe);
+    appendTo.appendChild(iframe);
     return iframe;
 };
 
