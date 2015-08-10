@@ -1,5 +1,3 @@
-// TODO: error handling for sites that delete the iframe
-
 chrome.runtime.sendMessage({method: "ping"});
 
 var options = null; // have to update options when this script is run and when user updates options.
@@ -26,7 +24,7 @@ var recrunId = null;
 // creates html that's not valid, but it works...
 var appendTo = document.documentElement;
 
-var getOverlay = function() {
+var getFrame = function() {
 	if (recrunId)
 		return document.getElementById(recrunId);
 	else
@@ -34,7 +32,7 @@ var getOverlay = function() {
 };
 
 var getRecrunWindow = function() {
-    return getOverlay().contentWindow;
+    return getFrame().contentWindow;
 };
 
 var getRecrunDoc = function() {
@@ -159,19 +157,28 @@ var createUniqueId = function() {
  return null;
 };
 
+var active = false;
+
 var overlay = null;
 var bPopup = function(callback) {    
     recrunId = createUniqueId();
     if (recrunId) {
         var iframe = createOverlay();
+        var flag = false;
         iframe.onload = function() {
+            // you saw multiple onload firings
+            if (flag)
+                return;
+            else
+                flag = true;
             var options = {
                     zIndex: 2147483647,
                     position: ['auto', vPos + ' !important'],
                     appendTo: appendTo,
-                    positionStyle: 'fixed',
+                    positionStyle: 'fixed',                    
                     onOpen: disableScroll,
                     onClose: function() {
+                        active = false;
                         enableScroll();
                         appendTo.removeChild(iframe);
                     }
@@ -179,7 +186,41 @@ var bPopup = function(callback) {
             
             overlay = $('#' + recrunId).bPopup(options, callback);
         };
+        active = true;
         appendTo.appendChild(iframe);
+        
+        // error checker
+        // checks for errors every $rate milliseconds, while recrun is active.
+        // this is not elegant, but much simpler than adding try/catch blocks
+        // throughout the program, and handling at each possible point of failure
+        // (e.g., trying to reference an iframe and it doesn't exist)
+        var rate = 100; // runs every 100 ms
+        var errIntId = setInterval(function() {
+            if (!active) {
+                clearInterval(errIntId);
+                return;
+            }
+            
+            // TODO: any other errors to handle?
+            // overlay gets created after iframe appended
+            
+            // TODO: is it possible for a false detection when the overlay is being
+            // closed.
+            if (!getFrame() && overlay) {
+                try {
+                    closeOverlay();
+                } catch (err) {
+                    // nothing
+                } finally {
+                    active = false;
+                    clearInterval(errIntId);
+                    var errmsg = "recrun couldn't run on this page.\n\n"
+                        + "(this occurs on incompatible pages)";
+                    alert(errmsg);
+                    return;   
+                }
+            }
+        }, rate);
     }
 };
 
@@ -421,6 +462,11 @@ var closeOverlay = function() {
 };
 
 var recrun = function() {
+    if (document.readyState !== 'complete') {
+        alert('Please wait for the page to finish loading');
+        return;
+    }
+    
     if (isOverlayOpen()) {
         closeOverlay();
         return;
@@ -445,8 +491,8 @@ var recrun = function() {
             recrunHide('recrun-apiresponse');
             recrunHide('recrun-error');
             recrunShow('recrun-loader');
-            // missing token will return an error from Diffbot
             
+            // no need to trim. options page does that.
             var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
             if (!validToken) {
                 show(); // will show an error

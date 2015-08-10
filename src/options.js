@@ -19,7 +19,7 @@ var saveOptions = function() {
     var options = Object.create(null);
     
     var tokenInput = document.getElementById("token").value;
-    options['token'] = tokenInput;
+    options['token'] = tokenInput.trim(); // trim since Diffbot tokens don't have spaces on the edge
     
     for (var i = 0; i < checkboxes.length; i++) {
         var checkbox = checkboxes[i];
