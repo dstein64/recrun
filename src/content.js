@@ -1,3 +1,5 @@
+// TODO: error handling for sites that delete the iframe
+
 chrome.runtime.sendMessage({method: "ping"});
 
 var options = null; // have to update options when this script is run and when user updates options.
@@ -80,7 +82,7 @@ var disableScrollHandler = function(e) {
  var atTop = scrollElt.scrollTop <= 0;
  
  if (type === 'keydown' && e.which === ESC) {
-     overlay.close();
+     closeOverlay();
      return false;
  } else if (scrollKeyPress) {
      
@@ -142,32 +144,50 @@ var enableScroll = function() {
 var vHeight = '95%';
 var vPos = '2%'; // 2% margin on top, 3% on bottom
 
+//create a unique id that won't clash with any other ids on the page.
+//doesn't have to be static since we don't refer to the id statically
+//(no references in css, etc.).
+var createUniqueId = function() {
+ var tries = 0;
+ while (tries < 20) {
+     var curId = '_' + Math.random().toString(36).substr(2, 9);
+     if (!document.getElementById(curId)) {
+         return curId;
+     }
+     tries = tries + 1;
+ }
+ return null;
+};
+
 var overlay = null;
-var bPopup = function(callback) {
-    var options = {
-        zIndex: 2147483647,
-        position: ['auto', vPos + ' !important'],
-        appendTo: appendTo,
-        positionStyle: 'fixed',
-        onOpen: disableScroll,
-        onClose: enableScroll
-    };
-    
-    overlay = $('#' + recrunId).bPopup(options, function() {
-        var intervalId = setInterval(function() {
-            if (getRecrunDoc().readyState === 'complete') {
-                clearInterval(intervalId);
-                callback();
-            }
-        }, 100);
-    });
+var bPopup = function(callback) {    
+    recrunId = createUniqueId();
+    if (recrunId) {
+        var iframe = createOverlay();
+        iframe.onload = function() {
+            var options = {
+                    zIndex: 2147483647,
+                    position: ['auto', vPos + ' !important'],
+                    appendTo: appendTo,
+                    positionStyle: 'fixed',
+                    onOpen: disableScroll,
+                    onClose: function() {
+                        enableScroll();
+                        appendTo.removeChild(iframe);
+                    }
+                };
+            
+            overlay = $('#' + recrunId).bPopup(options, callback);
+        };
+        appendTo.appendChild(iframe);
+    }
 };
 
 function receiveMessage(event) {
     if (event.data === 'close'
           && event.origin === (new URL(chrome.extension.getURL(''))).origin
           && overlay) {
-        overlay.close();
+        closeOverlay();
     }
 }
 //the following is for receiving a message from an iframe, not the extension background
@@ -198,7 +218,6 @@ var createOverlay = function() {
     setPropertyImp(iframe, 'background-color', '#f3f2ee');
     setPropertyImp(iframe, 'border', '1px solid #ccc');
     
-    appendTo.appendChild(iframe);
     return iframe;
 };
 
@@ -206,7 +225,7 @@ var createOverlay = function() {
 // losing its content.
 var resp = null;
 
-var overlayOpen = function() {
+var isOverlayOpen = function() {
     return overlay && (document.getElementsByClassName('b-modal').length > 0);
 };
 
@@ -397,19 +416,14 @@ var fillOverlay = function() {
     e.appendChild(commentsFrag);
 };
 
+var closeOverlay = function() {
+    overlay.close();
+};
+
 var recrun = function() {
-    if (overlayOpen()) {
-        overlay.close();
+    if (isOverlayOpen()) {
+        closeOverlay();
         return;
-    }
-    
-    if (!getOverlay()) {
-        var errmsg = "recrun couldn't start on this page.\n\n"
-            + "This can occur on incompatible pages or if recrun is used before"
-            + " the page is finished loading. For the latter case, please try again"
-            + " shortly.";
-        alert(errmsg);
-    	return;
     }
     
     var show = function() {
