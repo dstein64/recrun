@@ -203,8 +203,8 @@ var bPopup = function(callback) {
                         return;
                     }
                     if (ready()) {
-                        callback();
                         clearInterval(cbIntervalId);
+                        callback();
                     }
                 }, 100);
             }
