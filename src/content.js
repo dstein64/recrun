@@ -187,13 +187,12 @@ var bPopup = function(callback) {
             // iframe may not be ready yet. Couldn't find a more reliable way to
             // check, so poll (onload was firing too soon)
             var ready = function() {
-                //return !!getRecrunElementById('recrun-container');
-                try {
-                    return getRecrunDoc().readyState === 'complete';
-                } catch (err) {
-                    // haven't seen an error thrown above, but this is just in case (may not be possible)
-                    return !!getRecrunElementById('recrun-container');
-                }
+                // can't just rely on complete. Saw a case where complete was true
+                // and container false.
+                // ready state complete test may not be necessary.
+                var complete = getRecrunDoc().readyState === 'complete';
+                var container = !!getRecrunElementById('recrun-container');
+                return complete && container;
             }
             if (ready()) {
                 callback();
