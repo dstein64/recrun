@@ -12,7 +12,7 @@
    "manifest_version": 2,
    "name": "recrun",
    "permissions": [ "tabs" ],
-   "version": "2.2.0",
+   "version": "2.2.1",
    "browser_action": {
       "default_icon": "icons/icon38.png"
    },

@@ -47,8 +47,17 @@ var recrunShow = function(id) {
     $(getRecrunElementById(id)).show();
 };
 
-var recrunHide = function(id) {
-    $(getRecrunElementById(id)).hide();
+var recrunShowOnly = function(ids) {
+    var container = getRecrunElementById("recrun-container");
+    var children = container.children;
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        $(child).hide();
+    }
+    for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        recrunShow(id);
+    }
 };
 
 //keydown for ESC handled in iframe.js
@@ -294,8 +303,9 @@ var createOverlay = function() {
     return iframe;
 };
 
-// have to store response here. recalling bpopup relaods the iframe,
+// have to store response here. re-calling bpopup relaods the iframe,
 // losing its content.
+// resp is an array with two elements, url and json object: [URL, JSON]
 var resp = null;
 
 var isOverlayOpen = function() {
@@ -370,7 +380,7 @@ var sanitize = function(htmlString, rootNode) {
 
 var fillOverlay = function() {
     var doc = getRecrunDoc(); // recrun document
-    var article = resp[0];
+    var article = resp[1][0];
     var fields = ['title', 'author', 'date'];
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i];
@@ -507,39 +517,46 @@ var recrun = function() {
         return;
     }
     
-    var show = function() {
-        recrunHide('recrun-loader');
-        if (resp) {
-            fillOverlay();
-            recrunShow('recrun-apiresponse');
-        } else {
-            recrunShow('recrun-error');
-        }
+    var showGood = function() {
+        fillOverlay();
+        recrunShowOnly(['recrun-apiresponse']);
     };
+    
+    var showBad = function() {
+        recrunShowOnly(['recrun-error']);
+    };
+    
+    var url = document.location.href;
     
     var TIMEOUT = 40000;
     
-    if (resp) {
-        bPopup(show);
+    // use cached response
+    // also make sure cached response corresponds to current url (since url
+    // can change without a full page reload)
+    if (resp && url === resp[0]) {
+        bPopup(showGood);
     } else {
         bPopup(function() {
-            recrunHide('recrun-apiresponse');
-            recrunHide('recrun-error');
-            recrunShow('recrun-loader');
+            recrunShowOnly(['recrun-loader']);
             
             // no need to trim. options page does that.
             var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
             if (!validToken) {
-                show(); // will show an error
+                showBad(); // will show an error
             } else {
-                var url = document.location.href;
                 var xhr = new XMLHttpRequest();
                 var apiUrl = getApiUrl(options.token, url);
                 xhr.open("GET", apiUrl, true);
                 xhr.timeout = TIMEOUT;
                 xhr.onreadystatechange = function() {
+                    // 0 The request is not initialized
+                    // 1 ... has been set up
+                    // 2 ... has been sent
+                    // 3 ... is in process
+                    // 4 ... is complete
                     if (xhr.readyState == 4) {
                         var status = xhr.status;
+                        var showFn = showBad;
                         if (status === 200) {
                             var _resp = JSON.parse(xhr.responseText);
                             if (!('error' in _resp)
@@ -552,15 +569,17 @@ var recrun = function() {
                                         articles.push(object);
                                     }
                                 }
-                                if (articles.length > 0)
-                                    resp = articles;
+                                if (articles.length > 0) {
+                                    resp = [url, articles];
+                                    showFn = showGood;
+                                }
                             }
                         }
-                        show();
+                        showFn();
                     }
                 };
                 xhr.ontimeout = function () {
-                    show();
+                    showBad();
                 };
                 xhr.send();
             }
