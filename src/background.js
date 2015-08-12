@@ -1,10 +1,3 @@
-var ping = new Set();
-
-var onStartup = false; // have we heard from onStartup?
-chrome.runtime.onStartup.addListener(function() {
-    onStartup = true;
-});
-
 var getOptions = function() {
     var opts = localStorage["options"];
     if (opts) {
@@ -41,10 +34,6 @@ var defaultOptions = function() {
     localStorage["options"] = JSON.stringify(opts);
 })();
 
-chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-    ping['delete'](tabId);
-});
-
 chrome.browserAction.onClicked.addListener(function() {
     chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {method: 'recrun'}, {}, function(resp) {
@@ -60,20 +49,11 @@ chrome.browserAction.onClicked.addListener(function() {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
-    var tabId = sender.tab.id;
     if (method === "getOptions") {
         sendResponse(getOptions());
-    } else if (method === 'ping') {
-        ping.add(tabId);
     } else {
         sendResponse({});
     }
 });
 
-var ContentScript = function(script, js, allFrames, runAt) {
-    this.script = script;
-    this.js = js;
-    this.allFrames = allFrames;
-    this.runAt = runAt;
-};
 

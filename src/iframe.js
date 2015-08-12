@@ -78,4 +78,10 @@ document.body.addEventListener('scroll', function(e) {
     scroll.scrollTop += amount;
 });
 
+$(document).ready(function() {
+    var iAmReady = document.createElement('div');
+    iAmReady.setAttribute('id', 'i-am-ready');
+    iAmReady.style.display = 'none';
+    document.body.appendChild(iAmReady);
+});
 

@@ -1,5 +1,3 @@
-chrome.runtime.sendMessage({method: "ping"});
-
 var options = null; // have to update options when this script is run and when user updates options.
                     // there is no synchronous way that you're aware of to get the token from 
                     // local storage right before making an API call.
@@ -196,12 +194,21 @@ var bPopup = function(callback) {
             // iframe may not be ready yet. Couldn't find a more reliable way to
             // check, so poll (onload was firing too soon)
             var ready = function() {
-                // can't just rely on complete. Saw a case where complete was true
-                // and container false.
+                // can't just rely on pageReady. Saw a case where complete was true
+                // and elementsReady false.
                 // ready state complete test may not be necessary.
-                var complete = getRecrunDoc().readyState === 'complete';
-                var container = !!getRecrunElementById('recrun-container');
-                return complete && container;
+                var pageReady = getRecrunDoc().readyState === 'complete';
+                // TODO: also necessary to check more, like recrun-title, etc.?
+                //       shouldn't be with the addition of i-am-ready, which is
+                //       probably the only test necessary.
+                var elementsReady = getRecrunElementById('recrun-container')
+                                 && getRecrunElementById('recrun-loader')
+                                 && getRecrunElementById('recrun-apiresponse')
+                                 && getRecrunElementById('recrun-error')
+                                 && getRecrunElementById('i-am-ready');
+                elementsReady = !!elementsReady;
+                
+                return pageReady && elementsReady;
             }
             if (ready()) {
                 callback();
