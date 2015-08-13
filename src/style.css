@@ -74,13 +74,33 @@ div.postContent {
 	margin: 0;
 }
 
-#recrun-html {
-	margin-top: 11px;
-}
-
 #recrun-container p, #recrun-container strong, #recrun-container em, #recrun-container a {
 	font-size: 18px;
     line-height: 26px;
+}
+
+#recrun-html {
+    margin-top: 11px;
+}
+
+#recrun-html p {
+	font-size: 18px;
+}
+
+#recrun-html figure {
+    font-size: 16px;
+}
+
+#recrun-html figure img,
+#recrun-html figure video,
+#recrun-html figure audio,
+#recrun-html figure iframe,
+#recrun-html figure embed,
+#recrun-html figure object {
+	padding-top: 2px;
+	padding-bottom: 3px;
+	padding-left: 3px;
+	padding-right: 3px;
 }
 
 #recrun-container p {
