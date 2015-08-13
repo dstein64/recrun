@@ -1,0 +1,4 @@
+- Size and styling. For example, blockquotes show in 20px.
+  whereas paragraphs are 18px. Come up with a better set
+  of CSS rules.
+  
