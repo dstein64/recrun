@@ -251,9 +251,10 @@ var bPopup = function(callback) {
             // TODO: any other errors to handle?
             // overlay gets created after iframe appended
             
+            // Error 1: host site closed the iframe. test by checking for a missing iframe but an open overlay
             // TODO: is it possible for a false detection when the overlay is being
             // closed.
-            if (!getFrame() && overlay) {
+            if (!getFrame() && isOverlayOpen()) {
                 try {
                     closeOverlay();
                 } catch (err) {
@@ -270,16 +271,6 @@ var bPopup = function(callback) {
         }, rate);
     }
 };
-
-function receiveMessage(event) {
-    if (event.data === 'close'
-          && event.origin === (new URL(chrome.extension.getURL(''))).origin
-          && overlay) {
-        closeOverlay();
-    }
-}
-//the following is for receiving a message from an iframe, not the extension background
-window.addEventListener("message", receiveMessage, false);
 
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
@@ -511,19 +502,6 @@ var closeOverlay = function() {
 };
 
 var recrun = function() {
-    // the callback interval (cbIntervalId) above makes the following seemingly unnecessary
-    /*
-    if (document.readyState !== 'complete') {
-        alert('Please wait for the page to finish loading');
-        return;
-    }
-    */
-    
-    if (isOverlayOpen()) {
-        closeOverlay();
-        return;
-    }
-    
     var showGood = function() {
         fillOverlay();
         recrunShowOnly(['recrun-apiresponse']);
@@ -535,15 +513,16 @@ var recrun = function() {
     
     var url = document.location.href;
     
-    var TIMEOUT = 40000;
+    var callback = null;
     
     // use cached response
     // also make sure cached response corresponds to current url (since url
     // can change without a full page reload)
     if (resp && url === resp[0]) {
-        bPopup(showGood);
+        callback = showGood;
     } else {
-        bPopup(function() {
+        callback = function() {
+            var TIMEOUT = 40000;
             recrunShowOnly(['recrun-loader']);
             
             // no need to trim. options page does that.
@@ -561,7 +540,7 @@ var recrun = function() {
                     // 2 ... has been sent
                     // 3 ... is in process
                     // 4 ... is complete
-                    if (xhr.readyState == 4) {
+                    if (xhr.readyState === 4) {
                         var status = xhr.status;
                         var showFn = showBad;
                         if (status === 200) {
@@ -590,17 +569,50 @@ var recrun = function() {
                 };
                 xhr.send();
             }
-        });
+        };
+    }
+    
+    if (callback) {
+        if (isOverlayOpen()) {
+            callback();
+        } else {
+            bPopup(callback);
+        }
     }
 };
 
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
     if (method === "recrun") {
-        recrun();
+        if (isOverlayOpen()) {
+            closeOverlay();
+            return;
+        } else {
+            recrun();
+        }
     } else if (method === "updateOptions") {
         updateOptions(request.data);
         resp = null; // reset saved state, so the next call will re-fetch
     }
 });
+
+function receiveMessage(event) {
+    if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
+        if (event.data === 'close') {
+            if (isOverlayOpen())
+                closeOverlay();
+        } else if (event.data === 'retry') {
+            // insert a half second delay showing the loader when retrying.
+            // without this, it can be unclear if pressing the retry button
+            // resulted in any action.
+            recrunShowOnly(['recrun-loader']);
+            window.setTimeout(function() {
+                if (isOverlayOpen())
+                    recrun();
+            }, 250);
+        }
+    }
+}
+//the following is for receiving a message from an iframe, not the extension background
+window.addEventListener("message", receiveMessage, false);
 

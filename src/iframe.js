@@ -1,10 +1,15 @@
-var sendClose = function() {
-    parent.postMessage('close', decodeURIComponent(location.hash.slice(1)));
+var sendMsg = function(msg) {
+    parent.postMessage(msg, decodeURIComponent(location.hash.slice(1)));
 };
 
 var _close = document.getElementById('recrun-close');
 _close.onclick = function() {
-    sendClose();
+    sendMsg('close');
+};
+
+var _retry = document.getElementById('recrun-retry-button');
+_retry.onclick = function() {
+    sendMsg('retry');
 };
 
 var getScrollElt = function() {

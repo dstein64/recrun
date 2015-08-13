@@ -119,3 +119,8 @@ div.postContent {
     line-height: initial;
     color: initial;
 }
+
+#recrun-retry-button {
+	font-size: 18px;
+}
+
