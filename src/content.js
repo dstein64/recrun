@@ -1,3 +1,6 @@
+// url of last recrun'd page (updated by the recrun message listener)
+var lastUrl = null;
+
 var options = null; // have to update options when this script is run and when user updates options.
                     // there is no synchronous way that you're aware of to get the token from 
                     // local storage right before making an API call.
@@ -13,7 +16,10 @@ chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
 
 // send message to parent
 var sendMsg = function(msg) {
-    parent.postMessage(msg, decodeURIComponent(location.hash.slice(1)));
+    // targetOrigin matches on scheme, hostname, and port, so even if there
+    // has been a change to the URL (hash change or something else within the
+    // same domain, this targetOrigin will work.
+    parent.postMessage(msg, lastUrl);
 };
 
 var getApiUrl = function(token, url) {
@@ -500,9 +506,9 @@ var recrun = function() {
         recrunShowOnly(['recrun-error']);
     };
     
-    var url = decodeURIComponent(location.hash.slice(1));
-    
     var callback = null;
+    
+    var url = lastUrl;
     
     // use cached response
     // also make sure cached response corresponds to current url (since url
@@ -573,6 +579,7 @@ var recrun = function() {
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
     if (method === "recrun") {
+        lastUrl = request.data.url;
         if (isOverlayOpen()) {
             closeOverlay();
             return;
@@ -586,7 +593,7 @@ chrome.runtime.onMessage.addListener(function(request) {
     }
 });
 
-function receiveMessage(event) {
+var receiveMessage = function(event) {
     if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
         if (event.data === 'close') {
             if (isOverlayOpen())

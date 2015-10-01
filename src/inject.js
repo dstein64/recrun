@@ -35,8 +35,7 @@ setPropertyImp(iframe, 'z-index', '2147483647');
 
 iframe.setAttribute('frameBorder', '0px');
 
-var body = document.body;
-body.appendChild(iframe);
+document.body.appendChild(iframe);
 
 // seemingly we'd want to hide the iframe now. However, when doing this there
 // seems to be a drawing issue where the frame gets put too far left. Letting the
