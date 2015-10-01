@@ -11,12 +11,16 @@ chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
     updateOptions(opts);
 });
 
+// send message to parent
+var sendMsg = function(msg) {
+    parent.postMessage(msg, decodeURIComponent(location.hash.slice(1)));
+};
+
 var getApiUrl = function(token, url) {
     return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
 
-// gets initialized in create.js
-var recrunId = null;
+var recrunId = 'recrun';
 
 // append to <html> instead of <body>. Less chance of interfering.
 // creates html that's not valid, but it works...
@@ -149,26 +153,10 @@ var enableScroll = function() {
 var vHeight = '95%';
 var vPos = '2%'; // 2% margin on top, 3% on bottom
 
-//create a unique id that won't clash with any other ids on the page.
-//doesn't have to be static since we don't refer to the id statically
-//(no references in css, etc.).
-var createUniqueId = function() {
- var tries = 0;
- while (tries < 20) {
-     var curId = '_' + Math.random().toString(36).substr(2, 9);
-     if (!document.getElementById(curId)) {
-         return curId;
-     }
-     tries = tries + 1;
- }
- return null;
-};
-
 var active = false;
 
 var overlay = null;
-var bPopup = function(callback) {    
-    recrunId = createUniqueId();
+var bPopup = function(callback) {
     if (recrunId) {
         var iframe = createOverlay();
         
@@ -184,6 +172,7 @@ var bPopup = function(callback) {
                     active = false;
                     enableScroll();
                     appendTo.removeChild(iframe);
+                    sendMsg('hide');
                 }
             };
         
@@ -282,7 +271,7 @@ var createOverlay = function() {
     
     var iframe = document.createElement('iframe');
     var src = 'src/iframe.html';
-    var hash = '#' + encodeURIComponent(location.href);
+    var hash = '#' + location.hash.slice(1);
     iframe.src = chrome.extension.getURL(src + hash);
     
     iframe.setAttribute('id', recrunId);
@@ -511,7 +500,7 @@ var recrun = function() {
         recrunShowOnly(['recrun-error']);
     };
     
-    var url = document.location.href;
+    var url = decodeURIComponent(location.hash.slice(1));
     
     var callback = null;
     
@@ -588,6 +577,7 @@ chrome.runtime.onMessage.addListener(function(request) {
             closeOverlay();
             return;
         } else {
+            sendMsg('show');
             recrun();
         }
     } else if (method === "updateOptions") {
@@ -615,4 +605,8 @@ function receiveMessage(event) {
 }
 //the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
+
+// once we're loaded, tell parent to hide us
+// see comment in inject.js
+sendMsg('hide');
 

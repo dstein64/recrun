@@ -1,5 +1,5 @@
 var sendMsg = function(msg) {
-    parent.postMessage(msg, decodeURIComponent(location.hash.slice(1)));
+    parent.postMessage(msg, 'chrome-extension://' + chrome.runtime.id);
 };
 
 var _close = document.getElementById('recrun-close');
@@ -34,7 +34,7 @@ $(document).on('keydown mousedown', function(e) {
     if (type === 'keydown') {
         var which = e.which;
         if (which === ESC) {
-            sendClose();
+            sendMsg('close');
             return;
         }
         
