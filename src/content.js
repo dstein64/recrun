@@ -628,7 +628,7 @@ var receiveMessage = function(event) {
             }, 250);
         }
     } else if (dppMatch(lastUrl, event.origin)) {
-        if (method === 'keydown') {
+        if (method === 'keydown' && active && getFrame()) {
             var which = event.data['data'];
             if (which === ESC) {
                 closeOverlay();
@@ -641,7 +641,6 @@ var receiveMessage = function(event) {
                 closeOverlay();
                 return;
             } else {
-                debugger;
                 lastUrl = data['url'];
                 recrun(data['width']);
             }
