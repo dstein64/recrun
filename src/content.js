@@ -1,5 +1,4 @@
 // url of last recrun'd page
-// Initially set to parent's URL (so we can call hide() to parent; see comment in inject.js)
 // Subsequently updated by the recrun message listener
 var lastUrl = decodeURIComponent(location.hash.slice(1));
 
@@ -178,7 +177,7 @@ var vPos = '2%'; // 2% margin on top, 3% on bottom
 var active = false;
 
 var overlay = null;
-var bPopup = function(callback) {
+var bPopup = function(callback, width) {
     if (recrunId) {
         var iframe = createOverlay();
         
@@ -186,7 +185,8 @@ var bPopup = function(callback) {
                 zIndex: 2147483647,
                 position: ['auto', vPos + ' !important'],
                 appendTo: appendTo,
-                positionStyle: 'fixed',                    
+                positionStyle: 'fixed',    
+                preWindowWidth: width,
                 onOpen: function() {
                     disableScroll();
                 },
@@ -512,7 +512,8 @@ var closeOverlay = function() {
     overlay.close();
 };
 
-var recrun = function() {
+// we need width in case bPopup can't calculate width yet
+var recrun = function(width) {
     var showGood = function() {
         fillOverlay();
         recrunShowOnly(['recrun-apiresponse']);
@@ -587,23 +588,14 @@ var recrun = function() {
         if (isOverlayOpen()) {
             callback();
         } else {
-            bPopup(callback);
+            bPopup(callback, width);
         }
     }
 };
 
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
-    if (method === "recrun") {
-        lastUrl = request.data.url;
-        if (isOverlayOpen()) {
-            closeOverlay();
-            return;
-        } else {
-            sendMsg('show');
-            recrun();
-        }
-    } else if (method === "updateOptions") {
+    if (method === "updateOptions") {
         updateOptions(request.data);
         resp = null; // reset saved state, so the next call will re-fetch
     }
@@ -619,11 +611,13 @@ var dppMatch = function(u1, u2) {
 }
 
 var receiveMessage = function(event) {
+    var method = event.data['method'];
+    var data = event.data['data'];
     if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
-        if (event.data['method'] === 'close') {
+        if (method === 'close') {
             if (isOverlayOpen())
                 closeOverlay();
-        } else if (event.data['method'] === 'retry') {
+        } else if (method === 'retry') {
             // insert a half second delay showing the loader when retrying.
             // without this, it can be unclear if pressing the retry button
             // resulted in any action.
@@ -634,7 +628,7 @@ var receiveMessage = function(event) {
             }, 250);
         }
     } else if (dppMatch(lastUrl, event.origin)) {
-        if (event.data['method'] === 'keydown') {
+        if (method === 'keydown') {
             var which = event.data['data'];
             if (which === ESC) {
                 closeOverlay();
@@ -642,13 +636,20 @@ var receiveMessage = function(event) {
                 var kda = keydownAmount(which);
                 scroll(kda);
             }
+        } else if (method === 'recrun') {
+            if (isOverlayOpen()) {
+                closeOverlay();
+                return;
+            } else {
+                debugger;
+                lastUrl = data['url'];
+                recrun(data['width']);
+            }
         }
     }
 }
 //the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
 
-// once we're loaded, tell parent to hide us
-// see comment in inject.js
-sendMsg('hide');
+
 

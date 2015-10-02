@@ -1,5 +1,6 @@
 {
    "content_scripts": [ {
+      "run_at": "document_start",
       "js": [ "src/jquery.js",
               "src/inject.js" ],
       "matches": [ "*://*/*" ],
@@ -10,7 +11,7 @@
    "manifest_version": 2,
    "name": "recrun",
    "permissions": [ "tabs" ],
-   "version": "2.2.5",
+   "version": "2.2.6",
    "browser_action": {
       "default_icon": "icons/icon38.png"
    },

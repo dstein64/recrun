@@ -327,10 +327,10 @@
             $.isFunction(func) && func.call($popup, arg);
         };
         
-        function calcPosition(){
-            vPos        = fixedVPos ? o.position[1] : Math.max(0, ((wH- $popup.outerHeight(true)) / 2) - o.amsl)
-            , hPos      = fixedHPos ? o.position[0] : (wW - $popup.outerWidth(true)) / 2
-            , inside    = insideWindow();
+        function calcPosition() {
+            vPos        = fixedVPos ? o.position[1] : Math.max(0, ((wH- $popup.outerHeight(true)) / 2) - o.amsl);
+            hPos      = fixedHPos ? o.position[0] : ((wW > 0 ? wW : o.preWindowWidth) - $popup.outerWidth(true)) / 2;
+            inside    = insideWindow();            
         };
         
         function insideWindow(){
@@ -375,6 +375,7 @@
         , onClose:          false
         , onOpen:           false
         , opacity:          0.7
+        , preWindowWidth:   0
         , position:         ['auto', 'auto'] // x, y,
         , positionStyle:    'absolute'// absolute or fixed
         , scrollBar:        true

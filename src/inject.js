@@ -35,13 +35,8 @@ setPropertyImp(iframe, 'z-index', '2147483647');
 
 iframe.setAttribute('frameBorder', '0px');
 
-document.body.appendChild(iframe);
-
-// seemingly we'd want to hide the iframe now. However, when doing this there
-// seems to be a drawing issue where the frame gets put too far left. Letting the
-// frame load first, and then hiding it after loading seems to fix the issue. So
-// content.js tells us to hide.
-//$(iframe).hide();
+$(iframe).hide();
+document.documentElement.appendChild(iframe);
 
 var ESC = 27;
 
@@ -55,12 +50,16 @@ var SPACE = 32;
 
 var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
 
+var sendMsg = function(method, data) {
+    iframe.contentWindow.postMessage({'method': method, 'data': data}, 'chrome-extension://' + chrome.runtime.id);    
+};
+
 // Without clicking on iframe, this outer iframe will capture keydowns, so pass to child.
 $(document).on('keydown scroll', function(e) {
     if (e.type === 'keydown') {
         var which = e.which;
         if (s.has(which)) {
-            iframe.contentWindow.postMessage({'method': 'keydown', 'data': which}, 'chrome-extension://' + chrome.runtime.id);
+            sendMsg('keydown', which);
             return false;
         } else {
             return true;
@@ -68,6 +67,14 @@ $(document).on('keydown scroll', function(e) {
     } else {
         // ignore scroll. not sure why this triggers sometimes with Fn-Direction
         return false;
+    }
+});
+
+chrome.runtime.onMessage.addListener(function(request) {
+    var method = request.method; 
+    if (method === "recrun") {
+        $(iframe).show();
+        sendMsg('recrun', {url: request.data.url, width: window.innerWidth});
     }
 });
 
