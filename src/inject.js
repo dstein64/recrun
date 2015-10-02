@@ -55,20 +55,20 @@ var sendMsg = function(method, data) {
 };
 
 // Without clicking on iframe, this outer iframe will capture keydowns, so pass to child.
-$(document).on('keydown scroll', function(e) {
-    if (e.type === 'keydown') {
-        var which = e.which;
-        if (s.has(which)) {
-            sendMsg('keydown', which);
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        // ignore scroll. not sure why this triggers sometimes with Fn-Direction
-        return false;
-    }
-});
+//$(document).on('keydown scroll', function(e) {
+//    if (e.type === 'keydown') {
+//        var which = e.which;
+//        if (s.has(which)) {
+//            sendMsg('keydown', which);
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    } else {
+//        // ignore scroll. not sure why this triggers sometimes with Fn-Direction
+//        return false;
+//    }
+//});
 
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
