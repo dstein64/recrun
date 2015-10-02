@@ -1,5 +1,7 @@
-// url of last recrun'd page (updated by the recrun message listener)
-var lastUrl = null;
+// url of last recrun'd page
+// Initially set to parent's URL (so we can call hide() to parent; see comment in inject.js)
+// Subsequently updated by the recrun message listener
+var lastUrl = decodeURIComponent(location.hash.slice(1));
 
 var options = null; // have to update options when this script is run and when user updates options.
                     // there is no synchronous way that you're aware of to get the token from 
@@ -68,84 +70,98 @@ var recrunShowOnly = function(ids) {
     }
 };
 
+var ESC = 27;
+
+var UP = 38;
+var DOWN = 40;
+var PGUP = 33;
+var PGDOWN = 34;
+var HOME = 36;
+var END = 35;
+var SPACE = 32;
+
+var scroll = function(amount) {
+    var evt = new CustomEvent('scroll', {'detail': amount});
+    getRecrunWindow().document.body.dispatchEvent(evt);
+}
+
+var keydownAmount = function(key) {
+    var scrollElt = getRecrunElementById('scroll');
+    var n = 40;
+    var h = scrollElt.clientHeight * 0.85;
+    
+    var amount = 0;
+
+    if (key === UP) {
+        amount = -1 * n;
+    } else if (key === DOWN) {
+        amount = n;
+    } else if (key === SPACE || key === PGDOWN) {
+        amount = h;
+    } else if (key === PGUP) {
+        amount = -1 * h;
+    } else if (key === HOME) {
+        amount = -1 * scrollElt.scrollTop;
+    } else if (key === END) {
+        amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
+    }
+    
+    return amount;
+}
+
+var upSet = new Set([UP, PGUP, HOME]);
+var downSet = new Set([DOWN, PGDOWN, END, SPACE]);
+
 //keydown for ESC handled in iframe.js
 //here we handle UP and DOWN, which may sometimes be captured
 //by top frame (even after trying multiple ways to get iframe in focus)
 var disableScrollEvents = 'scroll mousewheel touchmove keydown mousedown';
 
 var disableScrollHandler = function(e) {    
- var type = e.type;
- 
- var ESC = 27;
- 
- var UP = 38;
- var DOWN = 40;
- var PGUP = 33;
- var PGDOWN = 34;
- var HOME = 36;
- var END = 35;
- var SPACE = 32;
- var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
- 
- var scrollKeyPress = type === 'keydown' && s.has(e.which);
- var scrollMouseWheel = type === 'mousewheel';
- var middleClick = type === 'mousedown' && e.which === 2;
- 
- var amount = 0;
- var scrollElt = getRecrunElementById('scroll');
- var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
- var atTop = scrollElt.scrollTop <= 0;
- 
- if (type === 'keydown' && e.which === ESC) {
-     closeOverlay();
-     return false;
- } else if (scrollKeyPress) {
-     
-     var key = e.which;
-     
-     var n = 40;
-     var h = scrollElt.clientHeight * 0.85;
-     
-     if (key === UP) {
-         amount = -1 * n;
-     } else if (key === DOWN) {
-         amount = n;
-     } else if (key === SPACE || key === PGDOWN) {
-         amount = h;
-     } else if (key === PGUP) {
-         amount = -1 * h;
-     } else if (key === HOME) {
-         amount = -1 * scrollElt.scrollTop;
-     } else if (key === END) {
-         amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
-     }
-     
- } else if (scrollMouseWheel) {
-     var wheelDelta = e.originalEvent.wheelDeltaY;
-     if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyong boundary
-             || (wheelDelta > 0 && atTop)) {
-         return false;
-     }
-     // this will cause scrolling speed to match mouse wheel scrolling
-     // with a mouse, but scrolling will be slightly faster with the Mac trackpad
-     // than it usually is.
-     amount = (-533/120) * wheelDelta;
-     // since can't currently get consistency, just turn off mouse
-     // wheel scrolling from border region
-     return false;
- } else if (middleClick) {
-     // not sure how to capture scrolling from middle click, so just capture and block
-     // so background page doesn't move
-     return false;
- } else {
-     return true;
- }
- 
- var evt = new CustomEvent('scroll', {'detail': amount});
- getRecrunWindow().document.body.dispatchEvent(evt);   
- 
- // returning false calls e.preventDefault() and e.stopPropagation()
- return false;
+    var type = e.type;
+    
+    var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
+
+    var scrollKeyPress = type === 'keydown' && s.has(e.which);
+    var scrollMouseWheel = type === 'mousewheel';
+    var middleClick = type === 'mousedown' && e.which === 2;
+
+    var amount = 0;
+    var scrollElt = getRecrunElementById('scroll');
+    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    var atTop = scrollElt.scrollTop <= 0;
+
+    if (type === 'keydown' && e.which === ESC) {
+        closeOverlay();
+        return false;
+    } else if (scrollKeyPress) {
+        var key = e.which;
+        var amount = keydownAmount(key);
+    } else if (scrollMouseWheel) {
+        var wheelDelta = e.originalEvent.wheelDeltaY;
+        if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyond boundary
+                || (wheelDelta > 0 && atTop)) {
+            return false;
+        }
+        // this will cause scrolling speed to match mouse wheel scrolling
+        // with a mouse, but scrolling will be slightly faster with the Mac trackpad
+        // than it usually is.
+        amount = (-533/120) * wheelDelta;
+        // since can't currently get consistency, just turn off mouse
+        // wheel scrolling from border region
+        return false;
+    } else if (middleClick) {
+        // not sure how to capture scrolling from middle click, so just capture and block
+        // so background page doesn't move
+        return false;
+    } else {
+        return true;
+    }
+    
+    scroll(amount);
+
+    // returning false calls e.preventDefault() and e.stopPropagation()
+    return false;
 };
 
 var disableScroll = function() {
@@ -593,12 +609,21 @@ chrome.runtime.onMessage.addListener(function(request) {
     }
 });
 
+// same domain, protocol, and port for two URLs?
+var dppMatch = function(u1, u2) {
+    U1 = new URL(u1);
+    U2 = new URL(u2);
+    return (U1.port === U2.port
+            && U1.protocol === U2.protocol
+            && U1.host === U2.host);
+}
+
 var receiveMessage = function(event) {
     if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
-        if (event.data === 'close') {
+        if (event.data['method'] === 'close') {
             if (isOverlayOpen())
                 closeOverlay();
-        } else if (event.data === 'retry') {
+        } else if (event.data['method'] === 'retry') {
             // insert a half second delay showing the loader when retrying.
             // without this, it can be unclear if pressing the retry button
             // resulted in any action.
@@ -607,6 +632,16 @@ var receiveMessage = function(event) {
                 if (isOverlayOpen())
                     recrun();
             }, 250);
+        }
+    } else if (dppMatch(lastUrl, event.origin)) {
+        if (event.data['method'] === 'keydown') {
+            var which = event.data['data'];
+            if (which === ESC) {
+                closeOverlay();
+            } else if (upSet.has(which) || downSet.has(which)) {
+                var kda = keydownAmount(which);
+                scroll(kda);
+            }
         }
     }
 }

@@ -1,15 +1,15 @@
-var sendMsg = function(msg) {
-    parent.postMessage(msg, 'chrome-extension://' + chrome.runtime.id);
+var sendMsg = function(method, data) {
+    parent.postMessage({'method': method, 'data': data}, 'chrome-extension://' + chrome.runtime.id);
 };
 
 var _close = document.getElementById('recrun-close');
 _close.onclick = function() {
-    sendMsg('close');
+    sendMsg('close', null);
 };
 
 var _retry = document.getElementById('recrun-retry-button');
 _retry.onclick = function() {
-    sendMsg('retry');
+    sendMsg('retry', null);
 };
 
 var getScrollElt = function() {
@@ -34,11 +34,11 @@ $(document).on('keydown mousedown', function(e) {
     if (type === 'keydown') {
         var which = e.which;
         if (which === ESC) {
-            sendMsg('close');
+            sendMsg('close', null);
             return;
         }
         
-        // ignore these or else they'll get sent the top frame
+        // ignore these or else they'll get sent to the top frame
         var ignore = false;
         var scrollElt = getScrollElt();
         if (upSet.has(which) && scrollElt.scrollTop <= 0) {

@@ -43,6 +43,34 @@ document.body.appendChild(iframe);
 // content.js tells us to hide.
 //$(iframe).hide();
 
+var ESC = 27;
+
+var UP = 38;
+var DOWN = 40;
+var PGUP = 33;
+var PGDOWN = 34;
+var HOME = 36;
+var END = 35;
+var SPACE = 32;
+
+var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
+
+// Without clicking on iframe, this outer iframe will capture keydowns, so pass to child.
+$(document).on('keydown scroll', function(e) {
+    if (e.type === 'keydown') {
+        var which = e.which;
+        if (s.has(which)) {
+            iframe.contentWindow.postMessage({'method': 'keydown', 'data': which}, 'chrome-extension://' + chrome.runtime.id);
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        // ignore scroll. not sure why this triggers sometimes with Fn-Direction
+        return false;
+    }
+});
+
 function receiveMessage(event) {
     if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
         if (event.data === 'show') {
