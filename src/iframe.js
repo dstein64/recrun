@@ -1,15 +1,57 @@
+// url of last recrun'd page
+// Subsequently updated by the recrun message listener
+var lastUrl = decodeURIComponent(location.hash.slice(1));
+
+var options = null; // have to update options when this script is run and when user updates options.
+                    // there is no synchronous way that you're aware of to get the token from 
+                    // local storage right before making an API call.
+
+var updateOptions = function(opts) {
+    options = opts;
+};
+
+chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+    var opts = response;
+    updateOptions(opts);
+});
+
+// send message to parent
 var sendMsg = function(method, data) {
-    parent.postMessage({'method': method, 'data': data}, 'chrome-extension://' + chrome.runtime.id);
+    // targetOrigin matches on scheme, hostname, and port, so even if there
+    // has been a change to the URL (hash change or something else within the
+    // same domain, this targetOrigin will work.
+    parent.postMessage({method: method, data: data}, lastUrl);
 };
 
-var _close = document.getElementById('recrun-close');
-_close.onclick = function() {
-    sendMsg('close', null);
+var getApiUrl = function(token, url) {
+    return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
 };
 
-var _retry = document.getElementById('recrun-retry-button');
-_retry.onclick = function() {
-    sendMsg('retry', null);
+var recrunId = 'recrun';
+
+// append to <html> instead of <body>. Less chance of interfering.
+// creates html that's not valid, but it works...
+var appendTo = document.documentElement;
+
+var getRecrunElementById = function(id) {
+    return document.getElementById(id);
+};
+
+var recrunShow = function(id) {
+    $(getRecrunElementById(id)).show();
+};
+
+var recrunShowOnly = function(ids) {
+    var container = getRecrunElementById("recrun-container");
+    var children = container.children;
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        $(child).hide();
+    }
+    for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        recrunShow(id);
+    }
 };
 
 var getScrollElt = function() {
@@ -34,7 +76,7 @@ $(document).on('keydown mousedown', function(e) {
     if (type === 'keydown') {
         var which = e.which;
         if (which === ESC) {
-            sendMsg('close', null);
+            closeOverlay();
             return;
         }
         
@@ -83,10 +125,423 @@ document.body.addEventListener('scroll', function(e) {
     scroll.scrollTop += amount;
 });
 
-$(document).ready(function() {
-    var iAmReady = document.createElement('div');
-    iAmReady.setAttribute('id', 'i-am-ready');
-    iAmReady.style.display = 'none';
-    document.body.appendChild(iAmReady);
+var overlay = null;
+var bPopup = function(callback, width) {
+    if (recrunId) {
+        // preLeft not exactly what bPopup would calculate, but close enough
+        var options = {
+                zIndex: 2147483647,
+                position: ['auto', window.getComputedStyle(document.getElementById(recrunId))['top']],
+                appendTo: appendTo,
+                positionStyle: 'fixed',    
+                preLeft: (width-800) / 2,
+                onOpen: function() {
+                    sendMsg('show', null);
+                },
+                onClose: function() {
+                    sendMsg('hide', null);
+                }
+            };
+        
+        overlay = $('#' + recrunId).bPopup(options, callback);
+    }
+};
+
+var setPropertyImp = function(element, key, val) {
+    // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
+    element.style.setProperty(key, val, 'important');
+};
+
+// have to store response here. re-calling bpopup relaods the iframe,
+// losing its content.
+// resp is an array with two elements, url and json object: [URL, JSON]
+var resp = null;
+
+var isOverlayOpen = function() {
+    return overlay && (document.getElementsByClassName('b-modal').length > 0);
+};
+
+var sanitize = function(htmlString, rootNode) {
+    var parser = new DOMParser();
+    var htmldoc = parser.parseFromString(htmlString, "text/html");
+    var doc = rootNode.ownerDocument;
+    
+    // from https://diffbot.com/dev/docs/article/html/
+    // block elements
+    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
+                        'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
+    // inline elements (following specs, although I usually treat <br> as block)
+    allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
+    // media
+    if (options.media) {
+        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
+    }
+    var allowedTags = new Set(allowedTagsL);
+    var allowerAttrs = new Map();
+    allowerAttrs.set('td', new Set(['valign', 'colspan']));
+    allowerAttrs.set('a', new Set(['href']));
+    allowerAttrs.set('img', new Set(['src', 'alt']));
+    allowerAttrs.set('video', new Set(['src']));
+    allowerAttrs.set('audio', new Set(['src']));
+    allowerAttrs.set('iframe', new Set(['src', 'frameborder']));
+    allowerAttrs.set('embed', new Set(['src', 'type']));
+    allowerAttrs.set('object', new Set(['src', 'type']));
+    
+    // 'rec' as in 'recursive', not 'rec' as in 'recrun'
+    var rec = function(diffbotNode, recrunNode) {
+        var type = diffbotNode.nodeType;
+        if (type === Node.TEXT_NODE) {
+            var text = diffbotNode.textContent;
+            recrunNode.appendChild(doc.createTextNode(text));
+        } else if (type === Node.ELEMENT_NODE) {
+            var tag = diffbotNode.tagName;
+            var tagLower = tag.toLowerCase();
+            if (allowedTags.has(tagLower)) {
+                var newElement = doc.createElement(tag);
+                
+                var attrs = diffbotNode.attributes;
+                for (var i = 0; i < attrs.length; i++) {
+                    var attr = attrs[i];
+                    var attrNameLower = attr.name.toLowerCase();
+                    if (allowerAttrs.has(tagLower) && allowerAttrs.get(tagLower).has(attrNameLower)) {
+                        newElement.setAttribute(attrNameLower, attr.value);
+                    }
+                }
+                if (tagLower === 'a') {
+                    newElement.setAttribute('target', '_blank');
+                }
+                
+                recrunNode.appendChild(newElement);
+                var _children = diffbotNode.childNodes;
+                for (var i = 0; i < _children.length; i++) {
+                    var _child = _children[i];
+                    rec(_child, newElement);
+                }
+            }
+        }
+    };
+    var children = htmldoc.body.childNodes;
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        rec(child, rootNode);
+    }
+};
+
+var fillOverlay = function() {
+    var article = resp[1][0];
+    var fields = ['title', 'author', 'date'];
+    for (var i = 0; i < fields.length; i++) {
+        var field = fields[i];
+        var e = getRecrunElementById('recrun-' + field);
+        if (field in article && e) {
+            e.appendChild(document.createTextNode(article[field]));
+        }
+    }
+    
+    var contentFrag = document.createDocumentFragment();
+    
+    // first add primary content
+    if (options.diffbotHtml) {
+        if ('html' in article) {
+            // create recrun content from Diffbot's html field
+            var htmlString = article['html'];
+            
+            // can inject with innerHtml, and then clean up
+            // I prefer this approach
+            // generally, this approach protects against malicious and/or malformed html
+            
+            sanitize(htmlString, contentFrag);
+        }
+        
+    } else {
+        // create recrun content from Diffbot's text field
+        // starting with one primary
+        if (options.media && 'images' in article) {
+            var images = article['images'];
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                if ('primary' in image
+                        && image['primary'] === true
+                        && 'url' in image
+                        && (image['url'].startsWith('http://')
+                                || image['url'].startsWith('https://'))) {
+                    var img = document.createElement('img');
+                    img.src = image['url'];
+                    contentFrag.appendChild(img);
+                    break;
+                }
+            }
+        }
+        
+        if ('text' in article) {
+            var text = article['text'];
+            var paragraphs = text.split(/\n/g);
+            for (var i = 0; i < paragraphs.length; i++) {
+                var p = document.createElement('p');
+                p.appendChild(document.createTextNode(paragraphs[i]));
+                contentFrag.appendChild(p);
+            }
+        }
+    }
+    
+    // next add discussion
+    
+    // TODO: indent comments based on parent/child relationships
+    
+    var commentsFrag = document.createDocumentFragment();
+    // comments currently disabled
+    if (false && options.comments && ('discussion' in article)) {
+        var discussion = article['discussion'];
+        if ('posts' in discussion) {
+            var posts = discussion['posts'];
+            if (posts.length > 0) {
+                var commentsHeader = document.createElement('h2');
+                commentsHeader.appendChild(document.createTextNode('Comments'));
+                commentsFrag.appendChild(commentsHeader);
+                for (var i = 0; i < posts.length; i++) {
+                    var post = posts[i];
+                    var postDiv = document.createElement('div');
+                    postDiv.classList.add('post');
+                    
+                    if ('author' in post) {
+                        var postAuthorDiv = document.createElement('div');
+                        postAuthorDiv.classList.add('postAuthor');
+                        postAuthorDiv.appendChild(document.createTextNode(post['author']));
+                        postDiv.appendChild(postAuthorDiv);
+                    }
+                    
+                    if ('date' in post) {
+                        var postDateDiv = document.createElement('div');
+                        postDateDiv.classList.add('postDate');
+                        postDateDiv.appendChild(document.createTextNode(post['date']));
+                        postDiv.appendChild(postDateDiv);
+                    }
+                    
+                    var postContentDiv = document.createElement('div');
+                    postContentDiv.classList.add('postContent');
+                    if (options.diffbotHtml) {
+                        if ('html' in post) {
+                            var htmlPostString = post['html'];
+                            sanitize(htmlPostString, postContentDiv);
+                        }
+                    } else if ('text' in post) {
+                        var postP = document.createElement('p');
+                        postP.appendChild(document.createTextNode(post['text']));
+                        postContentDiv.appendChild(postP);
+                    }
+                    
+                    if (!('parentId' in post) && i < posts.length-1) {
+                        var postSep = document.createElement('hr');
+                        postContentDiv.appendChild(postSep);
+                    }
+                    
+                    postDiv.appendChild(postContentDiv);
+                    commentsFrag.appendChild(postDiv);
+                }
+            }
+        }
+    }
+    
+    var e = getRecrunElementById('recrun-html');
+    e.appendChild(contentFrag);
+    e.appendChild(commentsFrag);
+};
+
+var closeOverlay = function() {
+    overlay.close();
+};
+
+// reset recrun content to default
+var reset = function() { 
+    ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
+    for (var i = 0; i < ids.length; i++) {
+        var cur = ids[i];
+        $('#' + cur).empty();
+    }
+};
+
+// we need width in case bPopup can't calculate width yet
+var recrun = function(width) {
+    reset();
+    
+    var showGood = function() {
+        fillOverlay();
+        recrunShowOnly(['recrun-apiresponse']);
+    };
+    
+    var showBad = function() {
+        recrunShowOnly(['recrun-error']);
+    };
+    
+    var callback = null;
+    
+    var url = lastUrl;
+    
+    // use cached response
+    // also make sure cached response corresponds to current url (since url
+    // can change without a full page reload)
+    if (resp && url === resp[0]) {
+        callback = showGood;
+    } else {
+        callback = function() {
+            var TIMEOUT = 40000;
+            recrunShowOnly(['recrun-loader']);
+            
+            // no need to trim. options page does that.
+            var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
+            if (!validToken) {
+                showBad(); // will show an error
+            } else {
+                var xhr = new XMLHttpRequest();
+                var apiUrl = getApiUrl(options.token, url);
+                xhr.open("GET", apiUrl, true);
+                xhr.timeout = TIMEOUT;
+                xhr.onreadystatechange = function() {
+                    // 0 The request is not initialized
+                    // 1 ... has been set up
+                    // 2 ... has been sent
+                    // 3 ... is in process
+                    // 4 ... is complete
+                    if (xhr.readyState === 4) {
+                        var status = xhr.status;
+                        var showFn = showBad;
+                        if (status === 200) {
+                            var _resp = JSON.parse(xhr.responseText);
+                            if (!('error' in _resp)
+                                    && 'objects' in _resp
+                                    && _resp['objects'].length > 0) {
+                                var articles = [];
+                                for (var i = 0; i < _resp['objects'].length; i++) {
+                                    var object = _resp['objects'][i];
+                                    if ('type' in object && object['type'] === 'article') {
+                                        articles.push(object);
+                                    }
+                                }
+                                if (articles.length > 0) {
+                                    resp = [url, articles];
+                                    showFn = showGood;
+                                }
+                            }
+                        }
+                        showFn();
+                    }
+                };
+                xhr.ontimeout = function () {
+                    showBad();
+                };
+                xhr.send();
+            }
+        };
+    }
+    
+    if (callback) {
+        if (isOverlayOpen()) {
+            callback();
+        } else {
+            bPopup(callback, width);
+        }
+    }
+};
+
+chrome.runtime.onMessage.addListener(function(request) {
+    var method = request.method; 
+    if (method === "updateOptions") {
+        updateOptions(request.data);
+        resp = null; // reset saved state, so the next call will re-fetch
+    }
 });
+
+// same domain, protocol, and port for two URLs?
+var dppMatch = function(u1, u2) {
+    U1 = new URL(u1);
+    U2 = new URL(u2);
+    return (U1.port === U2.port
+            && U1.protocol === U2.protocol
+            && U1.host === U2.host);
+}
+
+document.getElementById('recrun-retry-button').onclick = function() {
+    recrunShowOnly(['recrun-loader']);
+    // insert a half second delay showing the loader when retrying.
+    // without this, it can be unclear if pressing the retry button
+    // resulted in any action.
+    window.setTimeout(function() {
+        if (isOverlayOpen())
+            recrun();
+    }, 250);
+};
+
+var scroll = function(amount) {
+    var evt = new CustomEvent('scroll', {'detail': amount});
+    document.body.dispatchEvent(evt);
+}
+
+var keydownScroll = function(key) {
+    var scrollElt = getRecrunElementById('scroll');
+    var n = 40;
+    var h = scrollElt.clientHeight * 0.85;
+    
+    var amount = 0;
+
+    if (key === UP) {
+        amount = -1 * n;
+    } else if (key === DOWN) {
+        amount = n;
+    } else if (key === SPACE || key === PGDOWN) {
+        amount = h;
+    } else if (key === PGUP) {
+        amount = -1 * h;
+    } else if (key === HOME) {
+        amount = -1 * scrollElt.scrollTop;
+    } else if (key === END) {
+        amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
+    }
+    
+    scroll(amount);
+}
+
+var mousewheelScroll = function(wheelDelta) {
+    var scrollElt = getRecrunElementById('scroll');
+    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    var atTop = scrollElt.scrollTop <= 0;
+    if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyond boundary
+            || (wheelDelta > 0 && atTop)) {
+        return false;
+    }
+    // this will cause scrolling speed to match mouse wheel scrolling
+    // with a mouse, but scrolling will be slightly faster with the Mac trackpad
+    // than it usually is.
+    amount = (-533/120) * wheelDelta;
+    // since can't currently get consistency, just turn off mouse
+    // wheel scrolling from border region
+    //scroll(amount);
+}
+
+var receiveMessage = function(event) {
+    var method = event.data['method'];
+    var data = event.data['data'];
+    if (dppMatch(lastUrl, event.origin)) {
+        if (method === 'close') {
+            closeOverlay();
+        } else if (method === 'recrun') {
+            if (isOverlayOpen()) {
+                closeOverlay();
+                return;
+            } else {
+                lastUrl = data['url'];
+                recrun(data['width']);
+            }
+        } else if (method === 'amountscroll') {
+            scroll(data);
+        } else if (method === 'keydownscroll') {
+            keydownScroll(data);
+        } else if (method === 'mousewheelscroll') {
+            mousewheelScroll(data);
+        }
+    }
+}
+//the following is for receiving a message from an iframe, not the extension background
+window.addEventListener("message", receiveMessage, false);
+
+
 

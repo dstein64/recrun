@@ -328,8 +328,17 @@
         };
         
         function calcPosition() {
-            vPos        = fixedVPos ? o.position[1] : Math.max(0, ((wH- $popup.outerHeight(true)) / 2) - o.amsl);
-            hPos      = fixedHPos ? o.position[0] : ((wW > 0 ? wW : o.preWindowWidth) - $popup.outerWidth(true)) / 2;
+            vPos      = fixedVPos ? o.position[1] : Math.max(0, ((wH- $popup.outerHeight(true)) / 2) - o.amsl);
+            hPos = 0;
+            if (fixedHPos) {
+                hPos = o.position[0];
+            } else {
+                if (wW > 0 && $popup.outerWidth(true) > 0) {
+                    hPos = (wW - $popup.outerWidth(true)) / 2;
+                } else {
+                    hPos = o.preLeft;
+                }
+            }
             inside    = insideWindow();            
         };
         
@@ -375,7 +384,7 @@
         , onClose:          false
         , onOpen:           false
         , opacity:          0.7
-        , preWindowWidth:   0
+        , preLeft:          0
         , position:         ['auto', 'auto'] // x, y,
         , positionStyle:    'absolute'// absolute or fixed
         , scrollBar:        true

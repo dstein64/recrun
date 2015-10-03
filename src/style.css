@@ -1,14 +1,34 @@
 body {
-	padding-top: 6px;
-	padding-bottom: 6px;
+	margin: 0px;
+	padding: 0px;
+	background-color: transparent;
+}
+
+#recrun {
+    padding: 0px;
+    margin: 0px;
+    width: 800px;
+    height: 95%;
+    /* 2% margin on top, 3% on bottom */
+    top: 2%;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background-color: #f3f2ee !important;
+    overflow: hidden;
+}
+
+/* was not working properly with padding-top: 6px, and padding-bottom: 6px, so used *calc* */
+#padding {
+	position: relative;
+	top: 6px;
+	height: calc(100% - 12px);
 }
 
 #recrun-close {
 	font: bold 20px sans-serif;
-	padding-left: 6px;
-	padding-right: 6px;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding-left: 8px;
+	padding-top: 0px;
+	margin-top: 0px;
 	position: absolute;
 	left: 0px;
     top: 0px;
