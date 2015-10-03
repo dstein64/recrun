@@ -48,6 +48,10 @@ var exists = function() {
     return iframe && appendTo.contains(iframe);
 };
 
+var shown = function() {
+    return iframe && $(iframe).is(":visible"); 
+};
+
 var ESC = 27;
 
 var UP = 38;
@@ -72,7 +76,7 @@ var enableScroll = function() {
 var disableScrollEvents = 'scroll mousewheel touchmove keydown mousedown';
 
 var disableScrollHandler = function(e) {
-    if (!exists()) {
+    if (!exists() || !shown()) {
         enableScroll();
         return true;
     }
