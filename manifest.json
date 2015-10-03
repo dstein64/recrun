@@ -1,6 +1,6 @@
 {
    "content_scripts": [ {
-      "run_at": "document_start",
+      "run_at": "document_idle",
       "js": [ "src/jquery.js",
               "src/content.js" ],
       "matches": [ "*://*/*" ],
@@ -11,7 +11,7 @@
    "manifest_version": 2,
    "name": "recrun",
    "permissions": [ "tabs" ],
-   "version": "3.0.0",
+   "version": "3.0.1",
    "browser_action": {
       "default_icon": "icons/icon38.png"
    },
