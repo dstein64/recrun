@@ -333,6 +333,12 @@
             if (fixedHPos) {
                 hPos = o.position[0];
             } else {
+                // the need for this special-handing has been obviated by
+                // calling $(iframe).show(); in content.js, upon getting the
+                // recrun request from the user, as opposed to waiting for
+                // the bPopup onOpen callback.
+                // however, keep the fallback special-case handling, in case
+                // the behavior does not always work how it did in testing.
                 if (wW > 0 && $popup.outerWidth(true) > 0) {
                     hPos = (wW - $popup.outerWidth(true)) / 2;
                 } else {

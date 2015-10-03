@@ -108,6 +108,7 @@ chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
     if (method === "recrun") {
         if (exists()) {
+            $(iframe).show();
             sendMsg('recrun', {url: request.data.url, width: window.innerWidth});
         } else {
             var errmsg = "recrun couldn't run on this page.\n\n"
@@ -122,7 +123,6 @@ function receiveMessage(event) {
     var data = event.data['data'];
     if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
         if (method === 'show') {
-            $(iframe).show();
             disableScroll();
         }
         if (method === 'hide') {

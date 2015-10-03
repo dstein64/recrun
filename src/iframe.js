@@ -136,13 +136,14 @@ var bPopup = function(callback, width) {
                 positionStyle: 'fixed',    
                 preLeft: (width-800) / 2,
                 onOpen: function() {
+                    // iframe is already shown, but this enables the handling
+                    // of keydowns
                     sendMsg('show', null);
                 },
                 onClose: function() {
                     sendMsg('hide', null);
                 }
             };
-        
         overlay = $('#' + recrunId).bPopup(options, callback);
     }
 };
@@ -542,6 +543,4 @@ var receiveMessage = function(event) {
 }
 //the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
-
-
 
