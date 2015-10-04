@@ -76,7 +76,7 @@ $(document).on('keydown mousedown', function(e) {
     if (type === 'keydown') {
         var which = e.which;
         if (which === ESC) {
-            closeOverlay();
+            recrunClose();
             return;
         }
         
@@ -125,29 +125,6 @@ document.body.addEventListener('scroll', function(e) {
     scroll.scrollTop += amount;
 });
 
-var overlay = null;
-var bPopup = function(callback, width) {
-    if (recrunId) {
-        // preLeft not exactly what bPopup would calculate, but close enough
-        var options = {
-                zIndex: 2147483647,
-                position: ['auto', window.getComputedStyle(document.getElementById(recrunId))['top']],
-                appendTo: appendTo,
-                positionStyle: 'fixed',    
-                preLeft: (width-800) / 2,
-                onOpen: function() {
-                    // iframe is already shown, but this enables the handling
-                    // of keydowns
-                    sendMsg('show', null);
-                },
-                onClose: function() {
-                    sendMsg('hide', null);
-                }
-            };
-        overlay = $('#' + recrunId).bPopup(options, callback);
-    }
-};
-
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
@@ -157,10 +134,6 @@ var setPropertyImp = function(element, key, val) {
 // losing its content.
 // resp is an array with two elements, url and json object: [URL, JSON]
 var resp = null;
-
-var isOverlayOpen = function() {
-    return overlay && (document.getElementsByClassName('b-modal').length > 0);
-};
 
 var sanitize = function(htmlString, rootNode) {
     var parser = new DOMParser();
@@ -348,8 +321,8 @@ var fillOverlay = function() {
     e.appendChild(commentsFrag);
 };
 
-var closeOverlay = function() {
-    overlay.close();
+var recrunClose = function() {
+    sendMsg('close', null);
 };
 
 // reset recrun content to default
@@ -361,8 +334,7 @@ var reset = function() {
     }
 };
 
-// we need width in case bPopup can't calculate width yet
-var recrun = function(width) {
+var recrun = function() {
     reset();
     
     var showGood = function() {
@@ -436,16 +408,13 @@ var recrun = function(width) {
     }
     
     if (callback) {
-        if (isOverlayOpen()) {
-            callback();
-        } else {
-            bPopup(callback, width);
-        }
+        callback();
     }
 };
 
 chrome.runtime.onMessage.addListener(function(request) {
-    var method = request.method; 
+    var method = request.method;
+    // this also gets the 'recrun' message, which is handled in content.js
     if (method === "updateOptions") {
         updateOptions(request.data);
         resp = null; // reset saved state, so the next call will re-fetch
@@ -467,9 +436,16 @@ document.getElementById('recrun-retry-button').onclick = function() {
     // without this, it can be unclear if pressing the retry button
     // resulted in any action.
     window.setTimeout(function() {
-        if (isOverlayOpen())
-            recrun();
+        recrun();
     }, 250);
+};
+
+document.getElementById('overlay').onclick = function() {
+    recrunClose();
+};
+
+document.getElementById('recrun-close').onclick = function() {
+    recrunClose();
 };
 
 var scroll = function(amount) {
@@ -522,16 +498,9 @@ var receiveMessage = function(event) {
     var method = event.data['method'];
     var data = event.data['data'];
     if (dppMatch(lastUrl, event.origin)) {
-        if (method === 'close') {
-            closeOverlay();
-        } else if (method === 'recrun') {
-            if (isOverlayOpen()) {
-                closeOverlay();
-                return;
-            } else {
-                lastUrl = data['url'];
-                recrun(data['width']);
-            }
+        if (method === 'recrun') {
+            lastUrl = data['url'];
+            recrun();
         } else if (method === 'amountscroll') {
             scroll(data);
         } else if (method === 'keydownscroll') {
@@ -540,7 +509,8 @@ var receiveMessage = function(event) {
             mousewheelScroll(data);
         }
     }
-}
+};
 //the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
 
+sendMsg('ready', null);

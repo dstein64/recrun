@@ -29,8 +29,8 @@ setPropertyImp(iframe, 'top', '0px');
 setPropertyImp(iframe, 'left', '0px');
 setPropertyImp(iframe, 'padding', '0px');
 setPropertyImp(iframe, 'margin', '0px');
-setPropertyImp(iframe, 'width', '100%');
-setPropertyImp(iframe, 'height', '100%');
+setPropertyImp(iframe, 'width', '100vw');
+setPropertyImp(iframe, 'height', '100vh');
 
 // 2147483647 is the max. In testing, it seems like a tie goes to the most recently added element.
 // So you changed run_at from document_start to document_idle, so that recrun z-index takes precedence
@@ -95,7 +95,7 @@ var disableScrollHandler = function(e) {
     // returning false calls e.preventDefault() and e.stopPropagation()
 
     if (type === 'keydown' && e.which === ESC) {
-        sendMsg('close', null);s
+        recrunClose();
     } else if (scrollKeyPress) {
         var key = e.which;
         sendMsg('keydownscroll', key);
@@ -111,12 +111,53 @@ var disableScrollHandler = function(e) {
     return false;
 };
 
+var recrunClose = function() {
+    enableScroll();
+    //$(iframe).hide();
+    $(iframe).fadeOut(200);
+};
+
+var recrunOpen = function() {
+    disableScroll();
+    $(iframe).fadeIn(200);
+    // could also use url from chrome.runtime's message request.data.url
+    sendMsg('recrun', {url: location.href});
+};
+
+// is iframe ready
+ready = false;
+
+var receiveMessage = function(event) {
+    if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
+        var method = event.data['method'];
+        var data = event.data['data'];
+        if (method === 'close') {
+            recrunClose();
+        } else if (method === 'ready') {
+            ready = true;
+        }
+    }
+};
+
+//the following is for receiving a message from an iframe, not the extension background
+window.addEventListener("message", receiveMessage, false);
+
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method; 
     if (method === "recrun") {
-        if (exists()) {
-            $(iframe).show();
-            sendMsg('recrun', {url: request.data.url, width: window.innerWidth});
+        var _exists = exists();
+        if (_exists) {
+            if (ready) {
+                var _shown = shown(); // could have a toggle flag for this
+                if (_shown) {
+                    recrunClose();
+                } else {
+                    recrunOpen();
+                }   
+            } else {
+                var errmsg = "Please try again soon.";
+                alert(errmsg);
+            }
         } else {
             var errmsg = "recrun couldn't run on this page.\n\n"
                 + "(this occurs on incompatible pages)";
@@ -124,19 +165,3 @@ chrome.runtime.onMessage.addListener(function(request) {
         }
     }
 });
-
-function receiveMessage(event) {
-    var method = event.data['method'];
-    var data = event.data['data'];
-    if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
-        if (method === 'show') {
-            disableScroll();
-        }
-        if (method === 'hide') {
-            enableScroll();
-            $(iframe).hide();
-        }
-    }
-}
-//the following is for receiving a message from an iframe, not the extension background
-window.addEventListener("message", receiveMessage, false);

@@ -2,12 +2,11 @@
 <head>
     <link href="style.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="jquery.bpopup.js"></script>
 </head>
-<body style="display: none;">
+<body>
+  <div id='overlay'></div><!-- #overlay -->
   <div id='recrun'>
-   <div id='padding'>
-    <span id="recrun-close" class="b-close">X</span>
+    <span id="recrun-close">X</span>
     <div id="scroll" style="overflow: auto; height: 100%;">
         <div id="recrun-container">
             <img id="recrun-loader" src="loader.gif"></img>
@@ -30,8 +29,7 @@
             </div><!-- #recrun-errors -->
         </div><!-- #recrun-container -->
     </div><!-- #scroll -->
-   </div><!-- #padding -->
   </div><!-- #recrun -->
-  <script type="text/javascript" src="iframe.js"></script>
+ <script type="text/javascript" src="iframe.js"></script>
 </body>
 </html>

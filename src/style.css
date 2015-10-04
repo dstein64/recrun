@@ -1,14 +1,33 @@
 body {
-	margin: 0px;
 	padding: 0px;
-	background-color: transparent;
+	margin: 0px;
+}
+
+#overlay {
+	padding: 0px;
+	margin: 0px;
+	background-color: rgba(0, 0, 0, 0.7);
+	
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 0px;
+	z-index: 10;
+	cursor: pointer;
 }
 
 #recrun {
+	z-index: 20;
+	position: relative;
+	height: 95%;
     padding: 0px;
-    margin: 0px;
+    /*
+    padding-top: 6px;
+    padding-bottom: 6px;
+    */
+    margin: 0 auto;
     width: 800px;
-    height: 95%;
     /* 2% margin on top, 3% on bottom */
     top: 2%;
     border-radius: 3px;
@@ -17,17 +36,15 @@ body {
     overflow: hidden;
 }
 
-/* was not working properly with padding-top: 6px, and padding-bottom: 6px, so used *calc* */
-#padding {
-	position: relative;
-	top: 6px;
-	height: calc(100% - 12px);
+#recrun-container {
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 #recrun-close {
 	font: bold 20px sans-serif;
 	padding-left: 8px;
-	padding-top: 0px;
+	padding-top: 6px;
 	margin-top: 0px;
 	position: absolute;
 	left: 0px;
@@ -149,6 +166,14 @@ div.postContent {
 * {
 	max-width: 100%;
 	word-wrap: break-word;
+}
+
+pre, code {
+	width: 600px;
+	overflow-x: auto;
+	word-wrap: normal;
+	padding: 3px;
+	/*background-color: #fafafa;*/
 }
 
 #recrun-apiresponse, #recrun-error {
