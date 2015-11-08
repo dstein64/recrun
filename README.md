@@ -1,7 +1,7 @@
 recrun
 ======
 
-recrun in an acronym that stands for "retain essential content, remove unwanted noise".
+recrun is an acronym that stands for "retain essential content, remove unwanted noise".
 It uses the Diffbot Article API to extract relevant content from an article web page.
 A Diffbot token is required to use the extension.
 
