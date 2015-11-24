@@ -38,10 +38,13 @@ setPropertyImp(iframe, 'z-index', '2147483647');
 
 iframe.setAttribute('frameBorder', '0px');
 
+// iframe is appended after recrun is clicked the first time.
+// could remove it when recrun window closed (and then re-insert on subsequent clicks),
+// But recrun'ing the same page multiple times during the same session is cached, within the
+// iframe, so don't remove
 var appendTo = document.documentElement;
 
 $(iframe).hide();
-appendTo.appendChild(iframe);
 
 var sendMsg = function(method, data) {
     iframe.contentWindow.postMessage({'method': method, 'data': data}, 'chrome-extension://' + chrome.runtime.id);    
@@ -143,25 +146,50 @@ var receiveMessage = function(event) {
 window.addEventListener("message", receiveMessage, false);
 
 chrome.runtime.onMessage.addListener(function(request) {
-    var method = request.method; 
+    var method = request.method;
+    
     if (method === "recrun") {
-        var _exists = exists();
-        if (_exists) {
-            if (ready) {
-                var _shown = shown(); // could have a toggle flag for this
-                if (_shown) {
-                    recrunClose();
-                } else {
-                    recrunOpen();
-                }   
+        var recrunFn = function() {
+            var _shown = shown(); // could have a toggle flag for this
+            if (_shown) {
+                recrunClose();
             } else {
-                var errmsg = "Please try again soon.";
-                alert(errmsg);
+                recrunOpen();
             }
+        };
+        
+        var _exists = exists();
+        
+        var errmsg = "recrun couldn't run on this page.\n\n"
+            + "(this occurs on incompatible pages)";
+        
+        if (!ready && !_exists) {
+            appendTo.appendChild(iframe);
+            var tries = 0; // could base on time instead of iterations
+            var delay = 10; // 10 milliseconds
+            var MAX_TRIES = 1000; // 10 ms * 1000 = 10 seconds of trying
+            
+            var intervalId = setInterval(function() {
+                tries++;
+                if (ready && exists()) {
+                    clearInterval(intervalId);
+                    recrunFn();
+                    return;
+                }
+                
+                var err = (ready && !exists()) || (tries > MAX_TRIES);
+                
+                if (err) {
+                    clearInterval(intervalId);
+                    alert(errmsg);
+                    return;
+                }
+            }, delay);
+        } else if (ready && _exists) {
+            recrunFn();
         } else {
-            var errmsg = "recrun couldn't run on this page.\n\n"
-                + "(this occurs on incompatible pages)";
             alert(errmsg);
+            return;
         }
     }
 });
