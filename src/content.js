@@ -127,6 +127,9 @@ var recrunOpen = function() {
     sendMsg('recrun', {url: location.href});
 };
 
+// todo holds a function to run once ready
+var todo = null;
+
 // is iframe ready
 ready = false;
 
@@ -138,6 +141,10 @@ var receiveMessage = function(event) {
             recrunClose();
         } else if (method === 'ready') {
             ready = true;
+            if (todo) {
+                todo();
+                todo = null;
+            }
         }
     }
 };
@@ -149,6 +156,10 @@ chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method;
     
     if (method === "recrun") {
+        // TODO: possibly some error checking such that if user tries to recrun, but
+        //       recrun'ing doesn't finish within X seconds, assume a problematic site
+        //       (e.g., a site that removes the recrun iframe)
+        
         var recrunFn = function() {
             var _shown = shown(); // could have a toggle flag for this
             if (_shown) {
@@ -160,34 +171,14 @@ chrome.runtime.onMessage.addListener(function(request) {
         
         var _exists = exists();
         
-        var errmsg = "recrun couldn't run on this page.\n\n"
-            + "(this occurs on incompatible pages)";
-        
         if (!ready && !_exists) {
+            todo = recrunFn;
             appendTo.appendChild(iframe);
-            var tries = 0; // could base on time instead of iterations
-            var delay = 10; // 10 milliseconds
-            var MAX_TRIES = 1000; // 10 ms * 1000 = 10 seconds of trying
-            
-            var intervalId = setInterval(function() {
-                tries++;
-                if (ready && exists()) {
-                    clearInterval(intervalId);
-                    recrunFn();
-                    return;
-                }
-                
-                var err = (ready && !exists()) || (tries > MAX_TRIES);
-                
-                if (err) {
-                    clearInterval(intervalId);
-                    alert(errmsg);
-                    return;
-                }
-            }, delay);
         } else if (ready && _exists) {
             recrunFn();
         } else {
+            var errmsg = "recrun couldn't run on this page.\n\n"
+                + "(this occurs on incompatible pages)";
             alert(errmsg);
             return;
         }
