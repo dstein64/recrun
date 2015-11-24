@@ -142,6 +142,8 @@ var receiveMessage = function(event) {
         } else if (method === 'ready') {
             ready = true;
             if (todo) {
+                // TODO: is there any scenario where you should poll here?
+                //       seemingly, todo should always be able to run at this point
                 todo();
                 todo = null;
             }
