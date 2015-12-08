@@ -4,7 +4,9 @@ recrun
 recrun is an acronym that stands for *retain essential content, remove unwanted noise*.
 
 To use recrun, install the extension, navigate to an article web page,
-and click the eyeglasses icon in the Chrome toolbar. The extension is available from the Chrome Web Store at
+and click the eyeglasses icon in the Chrome toolbar (there is an arrow pointing
+to this icon in the recrun screenshot).
+The extension is available from the Chrome Web Store at
 https://chrome.google.com/webstore/detail/recrun/ocikmakgbemmhogikcbcbkebeephjcno.
 
 Optionally, recrun can use the [Diffbot Article API](http://www.diffbot.com/products/automatic/article/) to extract relevant content.
@@ -17,7 +19,7 @@ Screenshot
 The following image shows the recrun overlay on an article page, after clicking
 the *recrun* icon.
 
-![Screenshot](screenshots/screenshot.png)
+![Screenshot](screenshots/screenshotWithArrow.png)
 
 License
 -------
