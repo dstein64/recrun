@@ -23,8 +23,7 @@ License
 -------
 
 See [LICENSE](LICENSE).
-This license does not apply to the libraries. For the library licenses, see the corresponding license files
-in [src/lib](src/lib).
+This license does not apply to the libraries.
 
 Acknowledgments
 ---------------
