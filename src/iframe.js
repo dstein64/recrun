@@ -1,19 +1,11 @@
+var options = null;
+chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+    options = response;
+})
+
 // url of last recrun'd page
 // Subsequently updated by the recrun message listener
 var lastUrl = decodeURIComponent(location.hash.slice(1));
-
-var options = null; // have to update options when this script is run and when user updates options.
-                    // there is no synchronous way that you're aware of to get the token from 
-                    // local storage right before making an API call.
-
-var updateOptions = function(opts) {
-    options = opts;
-};
-
-chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
-    var opts = response;
-    updateOptions(opts);
-});
 
 // send message to parent
 var sendMsg = function(method, data) {
@@ -135,31 +127,10 @@ var setPropertyImp = function(element, key, val) {
 // resp is an array with two elements, url and json object: [URL, JSON]
 var resp = null;
 
-var sanitize = function(htmlString, rootNode) {
+var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs) {
     var parser = new DOMParser();
     var htmldoc = parser.parseFromString(htmlString, "text/html");
     var doc = rootNode.ownerDocument;
-    
-    // from https://diffbot.com/dev/docs/article/html/
-    // block elements
-    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
-                        'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
-    // inline elements (following specs, although I usually treat <br> as block)
-    allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
-    // media
-    if (options.media) {
-        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
-    }
-    var allowedTags = new Set(allowedTagsL);
-    var allowerAttrs = new Map();
-    allowerAttrs.set('td', new Set(['valign', 'colspan']));
-    allowerAttrs.set('a', new Set(['href']));
-    allowerAttrs.set('img', new Set(['src', 'alt']));
-    allowerAttrs.set('video', new Set(['src']));
-    allowerAttrs.set('audio', new Set(['src']));
-    allowerAttrs.set('iframe', new Set(['src', 'frameborder']));
-    allowerAttrs.set('embed', new Set(['src', 'type']));
-    allowerAttrs.set('object', new Set(['src', 'type']));
     
     // 'rec' as in 'recursive', not 'rec' as in 'recrun'
     var rec = function(diffbotNode, recrunNode) {
@@ -177,7 +148,7 @@ var sanitize = function(htmlString, rootNode) {
                 for (var i = 0; i < attrs.length; i++) {
                     var attr = attrs[i];
                     var attrNameLower = attr.name.toLowerCase();
-                    if (allowerAttrs.has(tagLower) && allowerAttrs.get(tagLower).has(attrNameLower)) {
+                    if (allowedAttrs.has(tagLower) && allowedAttrs.get(tagLower).has(attrNameLower)) {
                         newElement.setAttribute(attrNameLower, attr.value);
                     }
                 }
@@ -201,8 +172,50 @@ var sanitize = function(htmlString, rootNode) {
     }
 };
 
-var fillOverlay = function() {
-    var article = resp[1][0];
+var descendantOfTag = function(element, tagName, depth) {
+    depth = typeof depth !== 'undefined' ? depth : -1; // -1 for infinite. not safe.
+    tagName = tagName.toUpperCase();
+    var cur = element;
+    var counter = 0;
+    while (cur) {
+        if (cur === null) { // at root
+            return false;
+        } else if (depth > -1 && counter > depth) {
+            return false;
+        } else if (cur.tagName === tagName) {
+            return cur;
+        } else {
+            cur = cur.parentNode;
+        }
+        counter++;
+    }
+    return false;
+};
+
+var wrapNode = function(outer, inner) {
+    inner.parentElement.replaceChild(outer, inner);
+    outer.appendChild(inner);
+};
+
+// given some document fragment, return a list of nodes for which fn returns true
+var getElements = function(frag, fn) {
+    var l = [];
+    var rec = function(n) {
+        if (fn(n)) {
+            l.push(n);
+        }
+        var children = n.children;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            rec(child);
+        }
+    }
+    rec(frag);
+    return l;
+};
+
+// an aricle object has title, author, date, etc.
+var fillOverlay = function(article) {
     var fields = ['title', 'author', 'date'];
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i];
@@ -214,9 +227,50 @@ var fillOverlay = function() {
     
     var contentFrag = document.createDocumentFragment();
     
-    // first add primary content
-    if (options.diffbotHtml) {
-        if ('html' in article) {
+    // the following allowed tags and attributes is specific to Diffbot, but will
+    // be used for non-diffbot recrun'ing as well
+    
+    // from https://diffbot.com/dev/docs/article/html/
+    // block elements
+    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
+                        'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
+    // inline elements (following specs, although I usually treat <br> as block)
+    allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
+    // media
+    if (options.media) {
+        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
+    }
+    var allowedTags = new Set(allowedTagsL);
+    var allowedAttrs = new Map();
+    allowedAttrs.set('td', new Set(['valign', 'colspan']));
+    allowedAttrs.set('a', new Set(['href']));
+    allowedAttrs.set('img', new Set(['src', 'alt']));
+    allowedAttrs.set('video', new Set(['src']));
+    allowedAttrs.set('audio', new Set(['src']));
+    allowedAttrs.set('iframe', new Set(['src', 'frameborder']));
+    allowedAttrs.set('embed', new Set(['src', 'type']));
+    allowedAttrs.set('object', new Set(['src', 'type']));
+    
+    var useDiffbot = options.useDiffbot;
+    
+    if (!useDiffbot) {
+        var htmlString = article['html'];
+        sanitize(htmlString, contentFrag, allowedTags, allowedAttrs);
+        // wrap img in <figure> for better layout (so same styling rules can be used for Diffbot and readability)
+        var isImg = function(n) {
+            return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === "IMG");
+        };
+        var imgs = getElements(contentFrag, isImg);
+        for (var i = 0; i < imgs.length; i++) {
+            var img = imgs[i];
+            if (!descendantOfTag(img, "FIGURE", 10)) {
+                var figure = contentFrag.ownerDocument.createElement('figure');
+                wrapNode(figure, img);
+            }
+        }
+    } else {
+     // first add primary content
+        if (options.diffbotHtml && ('html' in article)) {
             // create recrun content from Diffbot's html field
             var htmlString = article['html'];
             
@@ -224,30 +278,27 @@ var fillOverlay = function() {
             // I prefer this approach
             // generally, this approach protects against malicious and/or malformed html
             
-            sanitize(htmlString, contentFrag);
-        }
-        
-    } else {
-        // create recrun content from Diffbot's text field
-        // starting with one primary
-        if (options.media && 'images' in article) {
-            var images = article['images'];
-            for (var i = 0; i < images.length; i++) {
-                var image = images[i];
-                if ('primary' in image
-                        && image['primary'] === true
-                        && 'url' in image
-                        && (image['url'].startsWith('http://')
-                                || image['url'].startsWith('https://'))) {
-                    var img = document.createElement('img');
-                    img.src = image['url'];
-                    contentFrag.appendChild(img);
-                    break;
+            sanitize(htmlString, contentFrag, allowedTags, allowedAttrs);
+        } else if ('text' in article) {
+            // create recrun content from Diffbot's text field
+            // starting with one primary
+            if (options.media && 'images' in article) {
+                var images = article['images'];
+                for (var i = 0; i < images.length; i++) {
+                    var image = images[i];
+                    if ('primary' in image
+                            && image['primary'] === true
+                            && 'url' in image
+                            && (image['url'].startsWith('http://')
+                                    || image['url'].startsWith('https://'))) {
+                        var img = document.createElement('img');
+                        img.src = image['url'];
+                        contentFrag.appendChild(img);
+                        break;
+                    }
                 }
             }
-        }
-        
-        if ('text' in article) {
+            
             var text = article['text'];
             var paragraphs = text.split(/\n/g);
             for (var i = 0; i < paragraphs.length; i++) {
@@ -256,69 +307,75 @@ var fillOverlay = function() {
                 contentFrag.appendChild(p);
             }
         }
-    }
-    
-    // next add discussion
-    
-    // TODO: indent comments based on parent/child relationships
-    
-    var commentsFrag = document.createDocumentFragment();
-    // comments currently disabled
-    if (false && options.comments && ('discussion' in article)) {
-        var discussion = article['discussion'];
-        if ('posts' in discussion) {
-            var posts = discussion['posts'];
-            if (posts.length > 0) {
-                var commentsHeader = document.createElement('h2');
-                commentsHeader.appendChild(document.createTextNode('Comments'));
-                commentsFrag.appendChild(commentsHeader);
-                for (var i = 0; i < posts.length; i++) {
-                    var post = posts[i];
-                    var postDiv = document.createElement('div');
-                    postDiv.classList.add('post');
-                    
-                    if ('author' in post) {
-                        var postAuthorDiv = document.createElement('div');
-                        postAuthorDiv.classList.add('postAuthor');
-                        postAuthorDiv.appendChild(document.createTextNode(post['author']));
-                        postDiv.appendChild(postAuthorDiv);
-                    }
-                    
-                    if ('date' in post) {
-                        var postDateDiv = document.createElement('div');
-                        postDateDiv.classList.add('postDate');
-                        postDateDiv.appendChild(document.createTextNode(post['date']));
-                        postDiv.appendChild(postDateDiv);
-                    }
-                    
-                    var postContentDiv = document.createElement('div');
-                    postContentDiv.classList.add('postContent');
-                    if (options.diffbotHtml) {
-                        if ('html' in post) {
-                            var htmlPostString = post['html'];
-                            sanitize(htmlPostString, postContentDiv);
+        
+        // next add discussion
+        
+        // TODO: indent comments based on parent/child relationships
+        
+        var commentsFrag = document.createDocumentFragment();
+        // comments currently disabled
+        if (false && options.comments && ('discussion' in article)) {
+            var discussion = article['discussion'];
+            if ('posts' in discussion) {
+                var posts = discussion['posts'];
+                if (posts.length > 0) {
+                    var commentsHeader = document.createElement('h2');
+                    commentsHeader.appendChild(document.createTextNode('Comments'));
+                    commentsFrag.appendChild(commentsHeader);
+                    for (var i = 0; i < posts.length; i++) {
+                        var post = posts[i];
+                        var postDiv = document.createElement('div');
+                        postDiv.classList.add('post');
+                        
+                        if ('author' in post) {
+                            var postAuthorDiv = document.createElement('div');
+                            postAuthorDiv.classList.add('postAuthor');
+                            postAuthorDiv.appendChild(document.createTextNode(post['author']));
+                            postDiv.appendChild(postAuthorDiv);
                         }
-                    } else if ('text' in post) {
-                        var postP = document.createElement('p');
-                        postP.appendChild(document.createTextNode(post['text']));
-                        postContentDiv.appendChild(postP);
+                        
+                        if ('date' in post) {
+                            var postDateDiv = document.createElement('div');
+                            postDateDiv.classList.add('postDate');
+                            postDateDiv.appendChild(document.createTextNode(post['date']));
+                            postDiv.appendChild(postDateDiv);
+                        }
+                        
+                        var postContentDiv = document.createElement('div');
+                        postContentDiv.classList.add('postContent');
+                        if (options.diffbotHtml) {
+                            if ('html' in post) {
+                                var htmlPostString = post['html'];
+                                sanitize(htmlPostString, postContentDiv);
+                            }
+                        } else if ('text' in post) {
+                            var postP = document.createElement('p');
+                            postP.appendChild(document.createTextNode(post['text']));
+                            postContentDiv.appendChild(postP);
+                        }
+                        
+                        if (!('parentId' in post) && i < posts.length-1) {
+                            var postSep = document.createElement('hr');
+                            postContentDiv.appendChild(postSep);
+                        }
+                        
+                        postDiv.appendChild(postContentDiv);
+                        commentsFrag.appendChild(postDiv);
                     }
-                    
-                    if (!('parentId' in post) && i < posts.length-1) {
-                        var postSep = document.createElement('hr');
-                        postContentDiv.appendChild(postSep);
-                    }
-                    
-                    postDiv.appendChild(postContentDiv);
-                    commentsFrag.appendChild(postDiv);
                 }
             }
         }
     }
     
     var e = getRecrunElementById('recrun-html');
-    e.appendChild(contentFrag);
-    e.appendChild(commentsFrag);
+    
+    if (contentFrag) {
+        e.appendChild(contentFrag);
+    }
+    
+    if (commentsFrag) {
+        e.appendChild(commentsFrag);
+    }
 };
 
 var recrunClose = function() {
@@ -334,15 +391,17 @@ var reset = function() {
     }
 };
 
-var recrun = function() {
+var recrun = function(article) {
     reset();
     
-    var showGood = function() {
-        fillOverlay();
-        recrunShowOnly(['recrun-apiresponse']);
+    var showDiffbot = function(article) {
+        return function() {
+            fillOverlay(article);
+            recrunShowOnly(['recrun-apiresponse']);
+        }
     };
     
-    var showBad = function() {
+    var showError = function() {
         recrunShowOnly(['recrun-error']);
     };
     
@@ -350,11 +409,18 @@ var recrun = function() {
     
     var url = lastUrl;
     
+    var useDiffbot = options.useDiffbot;
+    
     // use cached response
     // also make sure cached response corresponds to current url (since url
     // can change without a full page reload)
-    if (resp && url === resp[0]) {
-        callback = showGood;
+    if (article) {
+        callback = function() {
+            fillOverlay(article);
+            recrunShowOnly(['recrun-apiresponse']);
+        }
+    } else if (resp && url === resp[0]) {
+        callback = showDiffbot(resp[1][0]);
     } else {
         callback = function() {
             var TIMEOUT = 40000;
@@ -363,7 +429,7 @@ var recrun = function() {
             // no need to trim. options page does that.
             var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
             if (!validToken) {
-                showBad(); // will show an error
+                showError(); // will show an error
             } else {
                 var xhr = new XMLHttpRequest();
                 var apiUrl = getApiUrl(options.token, url);
@@ -377,7 +443,7 @@ var recrun = function() {
                     // 4 ... is complete
                     if (xhr.readyState === 4) {
                         var status = xhr.status;
-                        var showFn = showBad;
+                        var showFn = showError;
                         if (status === 200) {
                             var _resp = JSON.parse(xhr.responseText);
                             if (!('error' in _resp)
@@ -392,7 +458,7 @@ var recrun = function() {
                                 }
                                 if (articles.length > 0) {
                                     resp = [url, articles];
-                                    showFn = showGood;
+                                    showFn = showDiffbot(resp[1][0]);
                                 }
                             }
                         }
@@ -400,7 +466,7 @@ var recrun = function() {
                     }
                 };
                 xhr.ontimeout = function () {
-                    showBad();
+                    showError();
                 };
                 xhr.send();
             }
@@ -411,15 +477,6 @@ var recrun = function() {
         callback();
     }
 };
-
-chrome.runtime.onMessage.addListener(function(request) {
-    var method = request.method;
-    // this also gets the 'recrun' message, which is handled in content.js
-    if (method === "updateOptions") {
-        updateOptions(request.data);
-        resp = null; // reset saved state, so the next call will re-fetch
-    }
-});
 
 // same domain, protocol, and port for two URLs?
 var dppMatch = function(u1, u2) {
@@ -436,7 +493,7 @@ document.getElementById('recrun-retry-button').onclick = function() {
     // without this, it can be unclear if pressing the retry button
     // resulted in any action.
     window.setTimeout(function() {
-        recrun();
+        sendMsg('retry', null);
     }, 250);
 };
 
@@ -500,13 +557,21 @@ var receiveMessage = function(event) {
     if (dppMatch(lastUrl, event.origin)) {
         if (method === 'recrun') {
             lastUrl = data['url'];
-            recrun();
+            var article = null;
+            if ('rArticle' in data) {
+                article = data['rArticle'];
+            }
+            recrun(article);
         } else if (method === 'amountscroll') {
             scroll(data);
         } else if (method === 'keydownscroll') {
             keydownScroll(data);
         } else if (method === 'mousewheelscroll') {
             mousewheelScroll(data);
+        } else if (method === 'updateOptions') {
+            // reset saved state, so the next call will re-fetch
+            options = data;
+            resp = null;
         }
     }
 };

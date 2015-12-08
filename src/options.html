@@ -50,12 +50,15 @@ a.tooltip span {
 
 <div id="container">
 
-<strong>recrun</strong> requires a Diffbot API token.<br><br>
+<strong>recrun</strong> can optionally use the <a href="http://www.diffbot.com" target="_blank">Diffbot</a> API.<br><br>
+<input class="checkboxes" type="checkbox" id="useDiffbot-checkbox"><label for="useDiffbot-checkbox"><a class="tooltip">Use Diffbot<span>When enabled, recrun uses the Diffbot API.</i></span></a></label>
+<div id="diffbot-settings">
+<br>
 Visit <a href="http://www.diffbot.com" target="_blank">diffbot.com</a> to sign up for a free token.
 <br><br>
 Diffbot Token: <input id="token" type="text" name="token" size="35">
 <br><br>
-<div id="checkboxes">
+<div class="checkboxes">
 	<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource, determined by the corresponding <i>URL</i> specified in the Diffbot API response.</i></span></a></label>
 	<br>
 	<!--
@@ -64,7 +67,9 @@ Diffbot Token: <input id="token" type="text" name="token" size="35">
 	-->
 	<input type="checkbox" id="diffbotHtml-checkbox"><label for="diffbotHtml-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
 </div>
-<br><br>
+</div>
+<br>
+<br>
 <button id="defaults">Defaults</button>
 <button id="save">Save</button>
 <br><br>

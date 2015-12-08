@@ -12,8 +12,25 @@ var statusMessage = function(message, time) {
     curTimer = timer;
 };
 
+var useDiffbot = document.getElementById('useDiffbot-checkbox');
+
+//show Diffbot settings when "Use Diffbot" is selected
+//hide Diffbot settings otherwise 
+var diffbotShowHide = function() {
+    var diffbotSettings = document.getElementById('diffbot-settings');
+    if (useDiffbot.checked) {
+        diffbotSettings.style.display = "";
+    } else {
+        diffbotSettings.style.display = "none";
+    }
+};
+
+useDiffbot.onchange = function() {
+    diffbotShowHide();
+};
+
 //var checkboxes = ['media', 'comments', 'diffbotHtml'];
-var checkboxes = ['media', 'diffbotHtml'];
+var checkboxes = ['media', 'diffbotHtml', 'useDiffbot'];
 
 var saveOptions = function() {
     var options = Object.create(null);
@@ -47,7 +64,13 @@ var loadOptions = function(opts) {
     
     for (var i = 0; i < checkboxes.length; i++) {
         var checkbox = checkboxes[i];
-        document.getElementById(checkbox + '-checkbox').checked = opts[checkbox];
+        var e = document.getElementById(checkbox + '-checkbox');
+        e.checked = opts[checkbox];
+        if (e.onchange) {
+            // onchange won't fire when setting 'checked' with javascript,
+            // so trigger manually
+            e.onchange();
+        }
     }
     
     if (!token)
@@ -58,6 +81,7 @@ var loadOptions = function(opts) {
 document.addEventListener('DOMContentLoaded', function() {
     var opts = JSON.parse(localStorage["options"]);
     loadOptions(opts);
+    diffbotShowHide();
 });
 
 // load default options

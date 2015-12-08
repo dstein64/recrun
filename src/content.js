@@ -1,3 +1,22 @@
+var options = null;
+var updateOptions = function(opts) {
+    options = opts;
+    // notify iframe.js
+    if (iframe && iframe.contentWindow) {
+        sendMsg('updateOptions', options);
+    }
+};
+chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+    var opts = response;
+    updateOptions(opts);
+});
+chrome.runtime.onMessage.addListener(function(request) {
+    var method = request.method;
+    if (method === "updateOptions") {
+        updateOptions(request.data);
+    }
+});
+
 //create a unique id that won't clash with any other ids on the page.
 //doesn't have to be static since we don't refer to the id statically
 //(no references in css, etc.).
@@ -120,11 +139,28 @@ var recrunClose = function() {
     $(iframe).fadeOut(200);
 };
 
-var recrunOpen = function() {
-    disableScroll();
-    $(iframe).fadeIn(200);
+var recrunOpen = function(retry) {
+    if (!retry) {
+        disableScroll();
+        $(iframe).fadeIn(200);   
+    }
     // could also use url from chrome.runtime's message request.data.url
-    sendMsg('recrun', {url: location.href});
+    var data = Object(null);
+    data['url'] = location.href;
+    if (!options.useDiffbot) {
+        var readable = new Readability(document, null, 3);
+        var article = readable.getArticle(false);
+        
+        var rArticle = Object(null);
+        rArticle['text'] = article.getText();
+        rArticle['html'] = article.getHTML();
+        rArticle['title'] = article.title;
+        data['rArticle'] = rArticle;
+    }
+    
+    data['options'] = options;
+    
+    sendMsg('recrun', data);
 };
 
 // todo holds a function to run once ready
@@ -147,6 +183,8 @@ var receiveMessage = function(event) {
                 todo();
                 todo = null;
             }
+        } else if (method === 'retry') {
+            recrunOpen(true);
         }
     }
 };
@@ -167,7 +205,7 @@ chrome.runtime.onMessage.addListener(function(request) {
             if (_shown) {
                 recrunClose();
             } else {
-                recrunOpen();
+                recrunOpen(false);
             }
         };
         

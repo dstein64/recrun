@@ -1,7 +1,8 @@
 {
    "content_scripts": [ {
       "run_at": "document_idle",
-      "js": [ "src/jquery.js",
+      "js": [ "src/lib/jquery.js",
+              "src/lib/readabilitySAX/readabilitySAX.js",
               "src/content.js" ],
       "matches": [ "*://*/*" ],
       "all_frames": false
@@ -11,7 +12,7 @@
    "manifest_version": 2,
    "name": "recrun",
    "permissions": [ "tabs" ],
-   "version": "3.0.4",
+   "version": "3.0.5",
    "browser_action": {
       "default_icon": "icons/icon38.png"
    },
@@ -26,6 +27,6 @@
                                  "src/options.html",
                                  "src/iframe.html",
                                  "src/content.html",
-                                 "src/jquery.js" ],
+                                 "src/lib/jquery.js" ],
    "minimum_chrome_version": "41"
 }

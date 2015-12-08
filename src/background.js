@@ -1,3 +1,20 @@
+// if already using Diffbot, make sure new option, useDiffbot, set to true
+// can eventually remove this
+(function() {
+    var opts = localStorage["options"];
+    if (opts) {
+        opts = JSON.parse(opts);
+        if (!('useDiffbot' in opts)) {
+            if (('token' in opts) && opts.token) {
+                opts['useDiffbot'] = true;
+            } else {
+                opts['useDiffbot'] = false;
+            }
+            localStorage["options"] = JSON.stringify(opts);
+        }
+    }
+})();
+
 var getOptions = function() {
     var opts = localStorage["options"];
     if (opts) {
@@ -12,6 +29,7 @@ var defaultOptions = function() {
     options['media'] = true;
     options['comments'] = false;
     options['diffbotHtml'] = true;
+    options['useDiffbot'] = false;
     return options;
 };
 
@@ -27,8 +45,9 @@ var defaultOptions = function() {
     var keys = Object.keys(defaults);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        if (!(key in opts))
+        if (!(key in opts)) {
             opts[key] = defaults[key];
+        }
     }
     
     localStorage["options"] = JSON.stringify(opts);
