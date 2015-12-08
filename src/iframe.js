@@ -192,9 +192,17 @@ var descendantOfTag = function(element, tagName, depth) {
     return false;
 };
 
+// returns false on error (a node with no parent)
+// returns outer on success
 var wrapNode = function(outer, inner) {
-    inner.parentElement.replaceChild(outer, inner);
-    outer.appendChild(inner);
+    var parent = inner.parentElement;
+    if (parent) {
+        inner.parentElement.replaceChild(outer, inner);
+        outer.appendChild(inner);
+        return outer;
+    } else {
+        return false;
+    }
 };
 
 // given some document fragment, return a list of nodes for which fn returns true
