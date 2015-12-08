@@ -12,6 +12,10 @@
     line-height: 200%;
 }
 
+#diffbot-settings.disabled, #diffbot-settings.disabled * {
+    color: rgb(204, 204, 204);
+}
+
 body {
     margin-top: 20px;
 }
@@ -49,26 +53,20 @@ a.tooltip span {
 <body>
 
 <div id="container">
-
-<strong>recrun</strong> can optionally use the <a href="http://www.diffbot.com" target="_blank">Diffbot</a> API.
+<h3><em>recrun</em> Options</h3>
+<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource.</span></a></label>
 <br><br>
-<input type="checkbox" id="media-checkbox"><label for="media-checkbox"><a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be included. Media is retrieved from a remote resource.</i></span></a></label>
-<br><br>
-<input class="checkboxes" type="checkbox" id="useDiffbot-checkbox"><label for="useDiffbot-checkbox"><a class="tooltip">Use Diffbot<span>When enabled, recrun uses the Diffbot API.</i></span></a></label>
+<input class="checkboxes" type="checkbox" id="useDiffbot-checkbox"><label for="useDiffbot-checkbox"><a class="tooltip">Use Diffbot<span>When enabled, recrun uses the Diffbot API.<br>Visit diffbot.com to sign up for a token.</span></a></label>
 <div id="diffbot-settings">
-<br>
-Visit <a href="http://www.diffbot.com" target="_blank">diffbot.com</a> to sign up for a free token.
-<br><br>
-Diffbot Token: <input id="token" type="text" name="token" size="35">
-<br><br>
-<div class="checkboxes">
+	<br>
+	Diffbot Token: <input id="token" type="text" name="token" size="35">
+	<br><br>
 	<!--
-	<input type="checkbox" id="comments-checkbox"><label for="comments-checkbox">Comments</label>
+	<input class="checkboxes" type="checkbox" id="comments-checkbox"><label for="comments-checkbox">Comments</label>
 	<br>
 	-->
-	<input type="checkbox" id="diffbotHtml-checkbox"><label for="diffbotHtml-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
-</div>
-</div>
+	<input class="checkboxes" type="checkbox" id="diffbotHtml-checkbox"><label for="diffbotHtml-checkbox"><a class="tooltip">Diffbot <i>html</i><span>When enabled, content is from Diffbot's <i>html</i> field.</span></a></label>
+</div><!-- #diffbot-settings -->
 <br>
 <br>
 <button id="defaults">Defaults</button>

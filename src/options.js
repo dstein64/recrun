@@ -14,19 +14,25 @@ var statusMessage = function(message, time) {
 
 var useDiffbot = document.getElementById('useDiffbot-checkbox');
 
-//show Diffbot settings when "Use Diffbot" is selected
-//hide Diffbot settings otherwise 
-var diffbotShowHide = function() {
+// enable Diffbot settings when "Use Diffbot" is selected
+// disable Diffbot settings otherwise 
+var diffbotToggle = function() {
     var diffbotSettings = document.getElementById('diffbot-settings');
+    var tokenInput = document.getElementById('token');
+    var diffbotHtmlCheckbox = document.getElementById('diffbotHtml-checkbox');
     if (useDiffbot.checked) {
-        diffbotSettings.style.display = "";
+        diffbotSettings.classList.remove("disabled");
+        tokenInput.disabled = false;
+        diffbotHtmlCheckbox.disabled = false;
     } else {
-        diffbotSettings.style.display = "none";
+        diffbotSettings.classList.add("disabled");
+        tokenInput.disabled = true;
+        diffbotHtmlCheckbox.disabled = true;
     }
 };
 
 useDiffbot.onchange = function() {
-    diffbotShowHide();
+    diffbotToggle();
 };
 
 //var checkboxes = ['media', 'comments', 'diffbotHtml'];
@@ -81,7 +87,7 @@ var loadOptions = function(opts) {
 document.addEventListener('DOMContentLoaded', function() {
     var opts = JSON.parse(localStorage["options"]);
     loadOptions(opts);
-    diffbotShowHide();
+    diffbotToggle();
 });
 
 // load default options
