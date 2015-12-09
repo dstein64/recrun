@@ -85,7 +85,7 @@ $(document).on('keydown mousedown', function(e) {
         }
         
         if (ignore) {
-            // don't need e.preventDefault() or e.stopPropagation(), as their auto-implied
+            // don't need e.preventDefault() or e.stopPropagation(), as they're auto-implied
             return false;
         }
     } else if (type === 'mousedown') {
