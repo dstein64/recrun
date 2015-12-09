@@ -133,18 +133,21 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs) {
     var doc = rootNode.ownerDocument;
     
     // 'rec' as in 'recursive', not 'rec' as in 'recrun'
-    var rec = function(diffbotNode, recrunNode) {
-        var type = diffbotNode.nodeType;
+    var rec = function(n, recrunNode) {
+        var type = n.nodeType;
         if (type === Node.TEXT_NODE) {
-            var text = diffbotNode.textContent;
+            var text = n.textContent;
             recrunNode.appendChild(doc.createTextNode(text));
         } else if (type === Node.ELEMENT_NODE) {
-            var tag = diffbotNode.tagName;
+            var tag = n.tagName;
             var tagLower = tag.toLowerCase();
+            
+            var nextRecrunNode = recrunNode;
+            
             if (allowedTags.has(tagLower)) {
                 var newElement = doc.createElement(tag);
                 
-                var attrs = diffbotNode.attributes;
+                var attrs = n.attributes;
                 for (var i = 0; i < attrs.length; i++) {
                     var attr = attrs[i];
                     var attrNameLower = attr.name.toLowerCase();
@@ -157,12 +160,15 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs) {
                 }
                 
                 recrunNode.appendChild(newElement);
-                var _children = diffbotNode.childNodes;
-                for (var i = 0; i < _children.length; i++) {
-                    var _child = _children[i];
-                    rec(_child, newElement);
-                }
+                nextRecrunNode = newElement;
             }
+                
+            var _children = n.childNodes;
+            for (var i = 0; i < _children.length; i++) {
+                var _child = _children[i];
+                rec(_child, nextRecrunNode);
+            }
+            
         }
     };
     var children = htmldoc.body.childNodes;
