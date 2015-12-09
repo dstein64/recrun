@@ -268,6 +268,7 @@ var fillOverlay = function(article) {
     var useDiffbot = options.useDiffbot;
     
     if (!useDiffbot) {
+        allowedTags.add('div');
         var htmlString = article['html'];
         sanitize(htmlString, contentFrag, allowedTags, allowedAttrs);
         // wrap img in <figure> for better layout (so same styling rules can be used for Diffbot and readability)
