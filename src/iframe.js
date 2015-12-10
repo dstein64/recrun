@@ -168,8 +168,14 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                         newElement.setAttribute(attrNameLower, val);
                     }
                 }
+                
                 if (tagLower === 'a') {
                     newElement.setAttribute('target', '_blank');
+                }
+                
+                // <video> and <audio> need controls
+                if (tagLower === 'video' || tagLower === 'audio') {
+                    newElement.setAttribute('controls', '')
                 }
                 
                 recrunNode.appendChild(newElement);
@@ -274,6 +280,7 @@ var fillOverlay = function(article, baseURI) {
     allowedAttrs.set('img', new Set(['src', 'alt']));
     allowedAttrs.set('video', new Set(['src']));
     allowedAttrs.set('audio', new Set(['src']));
+    allowedAttrs.set('source', new Set(['src', 'type']));
     allowedAttrs.set('iframe', new Set(['src', 'frameborder']));
     allowedAttrs.set('embed', new Set(['src', 'type']));
     allowedAttrs.set('object', new Set(['src', 'type']));
