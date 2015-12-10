@@ -2,6 +2,7 @@ recrun
 ======
 
 recrun is an acronym that stands for *retain essential content, remove unwanted noise*.
+It presents article web pages in a format optimized for reading.
 
 To use recrun, install the extension, navigate to an article web page,
 and click the eyeglasses icon in the Chrome toolbar (there is an arrow pointing
