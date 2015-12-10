@@ -158,7 +158,7 @@ var recrunOpen = function(retry) {
         data['rArticle'] = rArticle;
     }
     
-    data['options'] = options;
+    data['baseURI'] = document.baseURI;
     
     sendMsg('recrun', data);
 };

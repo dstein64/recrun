@@ -127,7 +127,8 @@ var setPropertyImp = function(element, key, val) {
 // resp is an array with two elements, url and json object: [URL, JSON]
 var resp = null;
 
-var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs) {
+// have to pass baseURI for resolving relative links
+var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
     var parser = new DOMParser();
     var htmldoc = parser.parseFromString(htmlString, "text/html");
     var doc = rootNode.ownerDocument;
@@ -152,7 +153,19 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs) {
                     var attr = attrs[i];
                     var attrNameLower = attr.name.toLowerCase();
                     if (allowedAttrs.has(tagLower) && allowedAttrs.get(tagLower).has(attrNameLower)) {
-                        newElement.setAttribute(attrNameLower, attr.value);
+                        var val = attr.value;
+                        // resolve relative paths
+                        if (attrNameLower === "src" || attrNameLower === "href") {
+                            var basePath = baseURI.substring(0, baseURI.lastIndexOf("/") + 1);
+                            if (val.startsWith("./")
+                                    || val.startsWith("../")) {
+                                val = basePath + val;
+                            } else if (val.startsWith("/")) {
+                                val = basePath + val.substring(1);
+                            }
+                        }
+                        
+                        newElement.setAttribute(attrNameLower, val);
                     }
                 }
                 if (tagLower === 'a') {
@@ -229,7 +242,7 @@ var getElements = function(frag, fn) {
 };
 
 // an aricle object has title, author, date, etc.
-var fillOverlay = function(article) {
+var fillOverlay = function(article, baseURI) {
     var fields = ['title', 'author', 'date'];
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i];
@@ -270,7 +283,7 @@ var fillOverlay = function(article) {
     if (!useDiffbot) {
         allowedTags.add('div');
         var htmlString = article['html'];
-        sanitize(htmlString, contentFrag, allowedTags, allowedAttrs);
+        sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
         // wrap img in <figure> for better layout (so same styling rules can be used for Diffbot and readability)
         var isImg = function(n) {
             return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === "IMG");
@@ -293,7 +306,7 @@ var fillOverlay = function(article) {
             // I prefer this approach
             // generally, this approach protects against malicious and/or malformed html
             
-            sanitize(htmlString, contentFrag, allowedTags, allowedAttrs);
+            sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
         } else if ('text' in article) {
             // create recrun content from Diffbot's text field
             // starting with one primary
@@ -406,12 +419,12 @@ var reset = function() {
     }
 };
 
-var recrun = function(article) {
+var recrun = function(article, baseURI) {
     reset();
     
     var showDiffbot = function(article) {
         return function() {
-            fillOverlay(article);
+            fillOverlay(article, baseURI);
             recrunShowOnly(['recrun-apiresponse']);
         }
     };
@@ -431,7 +444,7 @@ var recrun = function(article) {
     // can change without a full page reload)
     if (article) {
         callback = function() {
-            fillOverlay(article);
+            fillOverlay(article, baseURI);
             recrunShowOnly(['recrun-apiresponse']);
         }
     } else if (resp && url === resp[0]) {
@@ -576,7 +589,8 @@ var receiveMessage = function(event) {
             if ('rArticle' in data) {
                 article = data['rArticle'];
             }
-            recrun(article);
+            var baseURI = data['baseURI'];
+            recrun(article, baseURI);
         } else if (method === 'amountscroll') {
             scroll(data);
         } else if (method === 'keydownscroll') {
