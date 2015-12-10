@@ -127,6 +127,30 @@ var setPropertyImp = function(element, key, val) {
 // resp is an array with two elements, url and json object: [URL, JSON]
 var resp = null;
 
+var nthIndexOf = function(n, str, sub) {
+    // TODO: implement with iteration instead of recursion
+    //       since sub is a character, the iterative solution could loop across
+    //       characters and count occurrences
+    if (n <= 0) {
+        return -1;
+    } else if (n <= 1) {
+        return str.indexOf(sub);
+    } else {
+        var i = str.indexOf(sub);
+        if (i === -1) {
+            return -1;
+        } else {
+            var _str = str.substring(i+1);
+            var _i = nthIndexOf(n-1, _str, sub);
+            if (_i > -1) {
+                return i + 1 + _i;
+            } else {
+                return -1;
+            }
+        }        
+    }
+};
+
 // have to pass baseURI for resolving relative links
 var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
     var parser = new DOMParser();
@@ -154,14 +178,18 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                     var attrNameLower = attr.name.toLowerCase();
                     if (allowedAttrs.has(tagLower) && allowedAttrs.get(tagLower).has(attrNameLower)) {
                         var val = attr.value;
-                        // resolve relative paths
+                        
+                        // resolve paths
                         if (attrNameLower === "src" || attrNameLower === "href") {
-                            var basePath = baseURI.substring(0, baseURI.lastIndexOf("/") + 1);
-                            if (val.startsWith("./")
-                                    || val.startsWith("../")) {
-                                val = basePath + val;
-                            } else if (val.startsWith("/")) {
-                                val = basePath + val.substring(1);
+                            if (val.indexOf("://") === -1) {
+                                var basePath = baseURI.substring(0, baseURI.lastIndexOf("/") + 1);
+                                if (val.startsWith("/")) {
+                                    var _i = nthIndexOf(3, basePath, "/");
+                                    var root = basePath.substring(0, _i);
+                                    val = root + val;
+                                } else {
+                                    val = basePath + val;
+                                }   
                             }
                         }
                         
