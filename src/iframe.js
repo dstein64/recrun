@@ -157,6 +157,9 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                 // u.host includes ":port" (if port specified), whereas u.hostname doesn't
                                 var root = u.protocol + '//' + u.host;
                                 
+                                // You confirmed with tests that URLs starting with "//"
+                                // get protocol from baseURI, not from protocol of site
+                                // you're currently on
                                 if (val.startsWith("//")) {
                                     val = u.protocol + val;
                                 } else if (val.startsWith("/")) {
