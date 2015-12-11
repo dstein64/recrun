@@ -122,30 +122,6 @@ var setPropertyImp = function(element, key, val) {
     element.style.setProperty(key, val, 'important');
 };
 
-var nthIndexOf = function(n, str, sub) {
-    // TODO: implement with iteration instead of recursion
-    //       since sub is a character, the iterative solution could loop across
-    //       characters and count occurrences
-    if (n <= 0) {
-        return -1;
-    } else if (n <= 1) {
-        return str.indexOf(sub);
-    } else {
-        var i = str.indexOf(sub);
-        if (i === -1) {
-            return -1;
-        } else {
-            var _str = str.substring(i+1);
-            var _i = nthIndexOf(n-1, _str, sub);
-            if (_i > -1) {
-                return i + 1 + _i;
-            } else {
-                return -1;
-            }
-        }        
-    }
-};
-
 // have to pass baseURI for resolving relative links
 var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
     var parser = new DOMParser();
@@ -177,12 +153,17 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                         // resolve paths
                         if (attrNameLower === "src" || attrNameLower === "href") {
                             if (val.indexOf("://") === -1) {
-                                var basePath = baseURI.substring(0, baseURI.lastIndexOf("/") + 1);
-                                if (val.startsWith("/")) {
-                                    var _i = nthIndexOf(3, basePath, "/");
-                                    var root = basePath.substring(0, _i);
+                                var u = new URL(baseURI);
+                                // u.host includes ":port" (if port specified), whereas u.hostname doesn't
+                                var root = u.protocol + '//' + u.host;
+                                
+                                if (val.startsWith("//")) {
+                                    val = u.protocol + val;
+                                } else if (val.startsWith("/")) {
                                     val = root + val;
                                 } else {
+                                    var pathname = u.pathname;
+                                    var basePath = u + pathname.substring(0, pathname.lastIndexOf("/") + 1);
                                     val = basePath + val;
                                 }   
                             }
@@ -321,7 +302,8 @@ var fillOverlay = function(article, baseURI) {
         var imgs = getElements(contentFrag, isImg);
         for (var i = 0; i < imgs.length; i++) {
             var img = imgs[i];
-            if (!descendantOfTag(img, "FIGURE", 10)) {
+            if (!descendantOfTag(img, "FIGURE", 10)
+                    && !descendantOfTag(img, "A", 10)) {
                 var figure = contentFrag.ownerDocument.createElement('figure');
                 wrapNode(figure, img);
             }
