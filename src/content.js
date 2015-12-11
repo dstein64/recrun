@@ -158,7 +158,9 @@ var recrunOpen = function(retry) {
     data['url'] = url;
     
     if (!options.useDiffbot) {
-        var readable = new Readability(document, null, 3);
+        var settings = Object(null);
+        settings['cleanAttributes'] = false;
+        var readable = new Readability(document, settings, 3);
         var article = readable.getArticle(false);
         
         var rArticle = Object(null);
