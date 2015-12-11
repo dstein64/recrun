@@ -122,11 +122,6 @@ var setPropertyImp = function(element, key, val) {
     element.style.setProperty(key, val, 'important');
 };
 
-// have to store response here. re-calling bpopup relaods the iframe,
-// losing its content.
-// resp is an array with two elements, url and json object: [URL, JSON]
-var resp = null;
-
 var nthIndexOf = function(n, str, sub) {
     // TODO: implement with iteration instead of recursion
     //       since sub is a character, the iterative solution could loop across
@@ -482,8 +477,6 @@ var recrun = function(article, baseURI) {
             fillOverlay(article, baseURI);
             recrunShowOnly(['recrun-apiresponse']);
         }
-    } else if (resp && url === resp[0]) {
-        callback = showDiffbot(resp[1][0]);
     } else {
         callback = function() {
             var TIMEOUT = 40000;
@@ -520,7 +513,9 @@ var recrun = function(article, baseURI) {
                                     }
                                 }
                                 if (articles.length > 0) {
-                                    resp = [url, articles];
+                                    // TODO: could send back to content.js or background.js
+                                    //       for temporary caching
+                                    var resp = [url, articles];
                                     showFn = showDiffbot(resp[1][0]);
                                 }
                             }
@@ -635,7 +630,6 @@ var receiveMessage = function(event) {
         } else if (method === 'updateOptions') {
             // reset saved state, so the next call will re-fetch
             options = data;
-            resp = null;
         }
     }
 };

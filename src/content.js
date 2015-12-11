@@ -136,7 +136,9 @@ var disableScrollHandler = function(e) {
 var recrunClose = function() {
     enableScroll();
     //$(iframe).hide();
-    $(iframe).fadeOut(200);
+    $(iframe).fadeOut(200, function() {
+        appendTo.removeChild(iframe);
+    });
 };
 
 var recrunOpen = function(retry) {
@@ -195,32 +197,27 @@ window.addEventListener("message", receiveMessage, false);
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method;
     
-    if (method === "recrun") {
-        // TODO: possibly some error checking such that if user tries to recrun, but
-        //       recrun'ing doesn't finish within X seconds, assume a problematic site
-        //       (e.g., a site that removes the recrun iframe)
-        
-        var recrunFn = function() {
-            var _shown = shown(); // could have a toggle flag for this
-            if (_shown) {
-                recrunClose();
-            } else {
-                recrunOpen(false);
-            }
-        };
-        
-        var _exists = exists();
-        
-        if (!ready && !_exists) {
-            todo = recrunFn;
-            appendTo.appendChild(iframe);
-        } else if (ready && _exists) {
-            recrunFn();
-        } else {
-            var errmsg = "recrun couldn't run on this page.\n\n"
-                + "(this occurs on incompatible pages)";
-            alert(errmsg);
+    if (method === "recrun") {        
+        var _shown = shown(); // could have a toggle flag for this
+        if (_shown) {
+            recrunClose();
             return;
+        } else {
+            todo = function() {
+                recrunOpen(false);
+            };
+            appendTo.appendChild(iframe);
+            
+            // TODO: possibly some error checking such that if user tries to recrun, but
+            //       recrun'ing doesn't finish within X seconds, assume a problematic site
+            //       (e.g., a site that removes the recrun iframe)
+            var error = false;
+            if (error) {
+                var errmsg = "recrun couldn't run on this page.\n\n"
+                    + "(this occurs on incompatible pages)";
+                alert(errmsg);
+                return;
+            }
         }
     }
 });
