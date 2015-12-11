@@ -513,10 +513,10 @@ var recrun = function(article, baseURI) {
                                     }
                                 }
                                 if (articles.length > 0) {
-                                    // TODO: could send back to content.js or background.js
-                                    //       for temporary caching
-                                    var resp = [url, articles];
-                                    showFn = showDiffbot(resp[1][0]);
+                                    var article = articles[0];
+                                    // send to content.js for caching
+                                    sendMsg('cacheDiffbot', article);
+                                    showFn = showDiffbot(article);
                                 }
                             }
                         }
@@ -616,8 +616,8 @@ var receiveMessage = function(event) {
         if (method === 'recrun') {
             lastUrl = data['url'];
             var article = null;
-            if ('rArticle' in data) {
-                article = data['rArticle'];
+            if ('article' in data && data['article']) {
+                article = data['article'];
             }
             var baseURI = data['baseURI'];
             recrun(article, baseURI);

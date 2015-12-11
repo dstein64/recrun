@@ -14,6 +14,8 @@ chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method;
     if (method === "updateOptions") {
         updateOptions(request.data);
+        // clear Diffbot cache
+        cacheDiffbot = null;
     }
 });
 
@@ -141,6 +143,9 @@ var recrunClose = function() {
     });
 };
 
+// store last Diffbot response here
+var cacheDiffbot = null;
+
 var recrunOpen = function(retry) {
     if (!retry) {
         disableScroll();
@@ -148,7 +153,10 @@ var recrunOpen = function(retry) {
     }
     // could also use url from chrome.runtime's message request.data.url
     var data = Object(null);
-    data['url'] = location.href;
+    
+    var url = location.href;
+    data['url'] = url;
+    
     if (!options.useDiffbot) {
         var readable = new Readability(document, null, 3);
         var article = readable.getArticle(false);
@@ -157,7 +165,9 @@ var recrunOpen = function(retry) {
         rArticle['text'] = article.getText();
         rArticle['html'] = article.getHTML();
         rArticle['title'] = article.title;
-        data['rArticle'] = rArticle;
+        data['article'] = rArticle;
+    } else if (cacheDiffbot && cacheDiffbot['pageUrl'] === url) {
+        data['article'] = cacheDiffbot;
     }
     
     data['baseURI'] = document.baseURI;
@@ -187,6 +197,8 @@ var receiveMessage = function(event) {
             }
         } else if (method === 'retry') {
             recrunOpen(true);
+        } else if (method === 'cacheDiffbot') {
+            cacheDiffbot = data;
         }
     }
 };
