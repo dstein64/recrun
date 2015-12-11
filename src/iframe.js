@@ -151,11 +151,42 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                         var val = attr.value;
                         
                         // resolve paths
+                        
+                        // http://stackoverflow.com/questions/4071117/uri-starting-with-two-slashes-how-do-they-behave/4071178#4071178
+                        // http://www.ietf.org/rfc/rfc3986.txt
+                        //
+                        // Within a representation with a well defined base URI of:
+                        //    http://a/b/c/d;p?q
+                        // a relative reference is transformed to its target URI as follows:
+                        //
+                        //    "g:h"           =  "g:h"
+                        //    "g"             =  "http://a/b/c/g"
+                        //    "./g"           =  "http://a/b/c/g"
+                        //    "g/"            =  "http://a/b/c/g/"
+                        //    "/g"            =  "http://a/g"
+                        //    "//g"           =  "http://g"
+                        //*    "?y"            =  "http://a/b/c/d;p?y"
+                        //    "g?y"           =  "http://a/b/c/g?y"
+                        //*    "#s"            =  "http://a/b/c/d;p?q#s"
+                        //    "g#s"           =  "http://a/b/c/g#s"
+                        //    "g?y#s"         =  "http://a/b/c/g?y#s"
+                        //    ";x"            =  "http://a/b/c/;x"
+                        //    "g;x"           =  "http://a/b/c/g;x"
+                        //    "g;x?y#s"       =  "http://a/b/c/g;x?y#s"
+                        //    ""              =  "http://a/b/c/d;p?q"
+                        //    "."             =  "http://a/b/c/"
+                        //    "./"            =  "http://a/b/c/"
+                        //    ".."            =  "http://a/b/"
+                        //    "../"           =  "http://a/b/"
+                        //    "../g"          =  "http://a/b/g"
+                        //    "../.."         =  "http://a/"
+                        //    "../../"        =  "http://a/"
+                        //    "../../g"       =  "http://a/g"
+                        
                         if (attrNameLower === "src" || attrNameLower === "href") {
                             if (val.indexOf("://") === -1) {
                                 var u = new URL(baseURI);
-                                // u.host includes ":port" (if port specified), whereas u.hostname doesn't
-                                var root = u.protocol + '//' + u.host;
+                                var origin = u.origin;
                                 
                                 // You confirmed with tests that URLs starting with "//"
                                 // get protocol from baseURI, not from protocol of site
@@ -163,7 +194,13 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                 if (val.startsWith("//")) {
                                     val = u.protocol + val;
                                 } else if (val.startsWith("/")) {
-                                    val = root + val;
+                                    val = origin + val;
+                                } else if (val.startsWith("?")) {
+                                    val = origin + u.pathname + val;
+                                } else if (val.startsWith("#")) {
+                                    val = origin + u.pathname + u.search + val;
+                                } else if (val.indexOf(":") > -1) {
+                                    // do nothing
                                 } else {
                                     var pathname = u.pathname;
                                     var basePath = u + pathname.substring(0, pathname.lastIndexOf("/") + 1);
