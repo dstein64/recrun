@@ -31,9 +31,7 @@ var diffbotToggle = function() {
     }
 };
 
-useDiffbot.onchange = function() {
-    diffbotToggle();
-};
+useDiffbot.addEventListener('change', diffbotToggle);
 
 //var checkboxes = ['media', 'comments', 'diffbotHtml'];
 var checkboxes = ['media', 'diffbotHtml', 'useDiffbot'];
@@ -58,9 +56,6 @@ var saveOptions = function() {
             chrome.tabs.sendMessage(tab.id, {method: 'updateOptions', data: options});
         }
     });
-
-    // Update status to let user know options were saved.
-    statusMessage("Options Saved", 1200);
 };
 
 var loadOptions = function(opts) {
@@ -72,22 +67,22 @@ var loadOptions = function(opts) {
         var checkbox = checkboxes[i];
         var e = document.getElementById(checkbox + '-checkbox');
         e.checked = opts[checkbox];
-        if (e.onchange) {
-            // onchange won't fire when setting 'checked' with javascript,
-            // so trigger manually
-            e.onchange();
-        }
     }
     
-    if (!token)
-        tokenInput.focus();
+    // onchange won't fire when setting 'checked' with javascript,
+    // so trigger diffbotToggle manually
+    diffbotToggle();
+    
+    // onchange/oninput won't fire when loading options with javascript,
+    // so trigger saveOptions manually
+    saveOptions();
 };
+
+var initOpts = JSON.parse(localStorage["options"]);
 
 // restore saved options
 document.addEventListener('DOMContentLoaded', function() {
-    var opts = JSON.parse(localStorage["options"]);
-    loadOptions(opts);
-    diffbotToggle();
+    loadOptions(initOpts);
 });
 
 // load default options
@@ -97,13 +92,23 @@ document.querySelector('#defaults').addEventListener('click', function() {
     statusMessage("Defaults Loaded", 1200);
 });
 
-document.querySelector('#save').addEventListener('click', saveOptions);
-
-var ENTER = 13;
-document.addEventListener("keydown", function(e) {
-    if (e.which === ENTER) {
-        saveOptions();
-        return false;
+// save options on any user input
+(function() {
+    var inputs = document.getElementsByTagName('input');
+    for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        // could handle each type separately to avoid multiple handlings
+        // a text box will be handled by oninput on each character and onchange
+        // when removing focus.
+        // but this is fine for now.
+        input.addEventListener('change', saveOptions);
+        input.addEventListener('input', saveOptions);
     }
+})();
+
+document.querySelector('#revert').addEventListener('click', function() {
+    loadOptions(initOpts);
+    statusMessage("Options Reverted", 1200);
 });
+
 
