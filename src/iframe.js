@@ -203,7 +203,7 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                     // do nothing
                                 } else {
                                     var pathname = u.pathname;
-                                    var basePath = u + pathname.substring(0, pathname.lastIndexOf("/") + 1);
+                                    var basePath = origin + pathname.substring(0, pathname.lastIndexOf("/") + 1);
                                     val = basePath + val;
                                 }   
                             }
