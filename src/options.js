@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // load default options
-document.querySelector('#defaults').addEventListener('click', function() {
+document.getElementById('defaults').addEventListener('click', function() {
     var defaults = chrome.extension.getBackgroundPage().defaultOptions();
     loadOptions(defaults);
     statusMessage("Defaults Loaded", 1200);
@@ -109,9 +109,11 @@ document.querySelector('#defaults').addEventListener('click', function() {
     }
 })();
 
-document.querySelector('#revert').addEventListener('click', function() {
+document.getElementById('revert').addEventListener('click', function() {
     loadOptions(initOpts);
     statusMessage("Options Reverted", 1200);
 });
 
+// version
+document.getElementById('version').innerText = chrome.extension.getBackgroundPage().getVersion();
 

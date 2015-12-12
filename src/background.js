@@ -23,6 +23,17 @@ var getOptions = function() {
     return opts;
 };
 
+var getVersion = function() {
+    var version = 0;
+    // chrome.app.getDetails().version is undocumented, so have a fallback
+    try {
+        version = chrome.app.getDetails().version;
+    } catch (e) {
+        version = chrome.runtime.getManifest().version;
+    }
+    return version;
+};
+
 var defaultOptions = function() {
     var options = Object.create(null);
     options['token'] = '';
