@@ -24,6 +24,9 @@ var diffbotToggle = function() {
         diffbotSettings.classList.remove("disabled");
         tokenInput.disabled = false;
         diffbotHtmlCheckbox.disabled = false;
+        if (!tokenInput.value) {
+            tokenInput.focus();
+        }
     } else {
         diffbotSettings.classList.add("disabled");
         tokenInput.disabled = true;
