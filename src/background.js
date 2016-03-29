@@ -67,7 +67,13 @@ var defaultOptions = function() {
 chrome.browserAction.onClicked.addListener(function() {
     chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {method: 'recrun', data: {url: tabs[0].url}}, {}, function(resp) {
-            if (chrome.runtime.lastError) {
+            // not ideal to match on strings, but as of Chrome around 49,
+            // even on success, chrome.runtime.lastError is set. When there is no error,
+            // it is "The message port closed before a reponse was received." ['response' is incorrectly spelled as 'reponse']
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=586155
+            if (chrome.runtime.lastError
+                    && chrome.runtime.lastError.message
+                    && chrome.runtime.lastError.message === "Could not establish connection. Receiving end does not exist.") {
                 var errmsg = "recrun couldn't start on this page.\n\n"
                     + "Reload the page and try again.\n\n"
                     + "(this occurs on tabs that were open while recrun was installed, updated, or re-enabled)"
