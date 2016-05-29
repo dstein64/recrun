@@ -208,8 +208,12 @@ var receiveMessage = function(event) {
 //the following is for receiving a message from an iframe, not the extension background
 window.addEventListener("message", receiveMessage, false);
 
-chrome.runtime.onMessage.addListener(function(request) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
+    // this prevents chrome.runtime.lastError from firing for no response
+    // see https://bugs.chromium.org/p/chromium/issues/detail?id=586155
+    // alternatively, could return true for each return from this function
+    sendResponse(true);
     
     if (method === "recrun") {        
         var _shown = shown(); // could have a toggle flag for this
