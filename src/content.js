@@ -210,16 +210,11 @@ window.addEventListener("message", receiveMessage, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
-    // this prevents chrome.runtime.lastError from firing for no response
-    // see https://bugs.chromium.org/p/chromium/issues/detail?id=586155
-    // alternatively, could return true for each return from this function
-    sendResponse(true);
     
     if (method === "recrun") {        
         var _shown = shown(); // could have a toggle flag for this
         if (_shown) {
             recrunClose();
-            return;
         } else {
             todo = function() {
                 recrunOpen(false);
@@ -234,8 +229,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 var errmsg = "recrun couldn't run on this page.\n\n"
                     + "(this occurs on incompatible pages)";
                 alert(errmsg);
-                return;
             }
         }
     }
+    
+    // this prevents chrome.runtime.lastError from firing for no response
+    // see https://bugs.chromium.org/p/chromium/issues/detail?id=586155
+    // alternatively, could return true from this function.
+    sendResponse(true);
 });
