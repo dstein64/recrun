@@ -92,23 +92,16 @@ $(document).on('keydown mousedown', function(e) {
         // disable middle click scrolling. on your desktop, it sometimes freezes the tab (???)
         // also now that you've reverted back to keeping the host page's scroll bar, this will prevent
         // the scenario where a wheel scroll can't continue in the overlay and gets captured by the host
-        if (e.which === 2)
+        if (e.which === 2) {
             return false;
+        }
     }
 });
 
-// bottom of page gets jumpy from scroll wheel. it goes one pixel below where it should.
-// this prevents that
 $(document).on('mousewheel', function(e) {
     var wheelDelta = e.originalEvent.wheelDelta;
-    var scrollElt = getScrollElt();
-    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
-    if (wheelDelta < 0 && atBottom) { // wheelDelta < 0, when scrolling down
-        return false;
-    } else if (wheelDelta > 0 && scrollElt.scrollTop <= 0) {
-        // I haven't seen this be a problem, but handle just in case
-        return false;
-    }
+    mousewheelScroll(wheelDelta);
+    return false;
 });
 
 document.body.addEventListener('scroll', function(e) {
@@ -615,20 +608,16 @@ var keydownScroll = function(key) {
 }
 
 var mousewheelScroll = function(wheelDelta) {
-    var scrollElt = getRecrunElementById('scroll');
-    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
-    var atTop = scrollElt.scrollTop <= 0;
-    if ((wheelDelta < 0 && atBottom) // prevents jumping 1 pixel beyond boundary
-            || (wheelDelta > 0 && atTop)) {
-        return false;
-    }
     // this will cause scrolling speed to match mouse wheel scrolling
     // with a mouse, but scrolling will be slightly faster with the Mac trackpad
     // than it usually is.
-    amount = (-533/120) * wheelDelta;
-    // since can't currently get consistency, just turn off mouse
-    // wheel scrolling from border region
-    //scroll(amount);
+	
+	// TODO: enable on PC, disable on Mac? (the -533/120 factor, that is)
+	
+    //amount = (-533/120) * wheelDelta;
+	
+	amount = -wheelDelta;
+    scroll(amount);
 }
 
 var receiveMessage = function(event) {
