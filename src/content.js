@@ -35,7 +35,8 @@ var createUniqueId = function() {
 };
 
 var setPropertyImp = function(element, key, val) {
-    // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
+    // have to use setProperty for setting !important.
+    // This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
 };
 
@@ -53,22 +54,28 @@ setPropertyImp(iframe, 'margin', '0px');
 setPropertyImp(iframe, 'width', '100vw');
 setPropertyImp(iframe, 'height', '100vh');
 
-// 2147483647 is the max. In testing, it seems like a tie goes to the most recently added element.
-// So you changed run_at from document_start to document_idle, so that recrun z-index takes precedence
+// 2147483647 is the max. In testing, it seems like a tie goes to the most
+// recently added element. So you changed run_at from document_start to
+// document_idle, so that recrun z-index takes precedence
 setPropertyImp(iframe, 'z-index', '2147483647');
 
 iframe.setAttribute('frameBorder', '0px');
 
 // iframe is appended after recrun is clicked the first time.
-// could remove it when recrun window closed (and then re-insert on subsequent clicks),
-// But recrun'ing the same page multiple times during the same session is cached, within the
-// iframe, so don't remove
+// could remove it when recrun window closed (and then re-insert on subsequent
+// clicks), But recrun'ing the same page multiple times during the same session
+// is cached, within the iframe, so don't remove
 var appendTo = document.documentElement;
 
 $(iframe).hide();
 
 var sendMsg = function(method, data) {
-    iframe.contentWindow.postMessage({'method': method, 'data': data}, 'chrome-extension://' + chrome.runtime.id);    
+    iframe.contentWindow.postMessage(
+        {
+            'method': method,
+            'data': data
+        },
+        'chrome-extension://' + chrome.runtime.id);
 };
 
 var exists = function() {
@@ -127,8 +134,8 @@ var disableScrollHandler = function(e) {
         var wheelDelta = e.originalEvent.wheelDeltaY;
         sendMsg('mousewheelscroll', wheelDelta);
     } else if (middleClick) {
-        // not sure how to capture scrolling from middle click, so just capture and block
-        // so background page doesn't move
+        // not sure how to capture scrolling from middle click, so just capture
+        // and block so background page doesn't move
     } else {
         return true;
     }
@@ -205,7 +212,8 @@ var receiveMessage = function(event) {
     }
 };
 
-//the following is for receiving a message from an iframe, not the extension background
+// the following is for receiving a message from an iframe, not the extension
+// background
 window.addEventListener("message", receiveMessage, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -221,9 +229,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             };
             appendTo.appendChild(iframe);
             
-            // TODO: possibly some error checking such that if user tries to recrun, but
-            //       recrun'ing doesn't finish within X seconds, assume a problematic site
-            //       (e.g., a site that removes the recrun iframe)
+            // TODO: possibly some error checking such that if user tries to
+            //       recrun, but recrun'ing doesn't finish within X seconds,
+            //       assume a problematic site (e.g., a site that removes the
+            //       recrun iframe)
             var error = false;
             if (error) {
                 var errmsg = "recrun couldn't run on this page.\n\n"

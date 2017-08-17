@@ -1,26 +1,26 @@
 body {
-	padding: 0px;
-	margin: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 #overlay {
-	padding: 0px;
-	margin: 0px;
-	background-color: rgba(0, 0, 0, 0.7);
-	
-	position: fixed;
-	top: 0px;
-	right: 0px;
-	bottom: 0px;
-	left: 0px;
-	z-index: 10;
-	cursor: pointer;
+    padding: 0px;
+    margin: 0px;
+    background-color: rgba(0, 0, 0, 0.7);
+    
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 10;
+    cursor: pointer;
 }
 
 #recrun {
-	z-index: 20;
-	position: relative;
-	height: 95%;
+    z-index: 20;
+    position: relative;
+    height: 95%;
     padding: 0px;
     /*
     padding-top: 6px;
@@ -37,82 +37,85 @@ body {
 }
 
 #recrun-container {
-	padding-top: 10px;
-	padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 #recrun-close {
-	font: bold 20px sans-serif;
-	padding-left: 8px;
-	padding-top: 6px;
-	margin-top: 0px;
-	position: absolute;
-	left: 0px;
+    font: bold 20px sans-serif;
+    padding-left: 8px;
+    padding-top: 6px;
+    margin-top: 0px;
+    position: absolute;
+    left: 0px;
     top: 0px;
-	color: gray;
-	cursor: pointer;
-	display: inline-block;
-	text-align: center;
-	text-decoration: none;
+    color: gray;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
 }
 
 div#recrun-container {
-	font-family: georgia, 'times new roman', times, serif;
-	width: 600px;
-	margin-left: auto;
+    font-family: georgia, 'times new roman', times, serif;
+    width: 600px;
+    margin-left: auto;
     margin-right: auto;
     margin-top: 15px;
     margin-bottom: 20px;
 }
 
 #recrun-loader {
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #recrun-title {
-	text-align: left;
-	display: block;
-	font-size: 28px;
-	line-height: 33px;
-	margin-bottom: 13px;
+    text-align: left;
+    display: block;
+    font-size: 28px;
+    line-height: 33px;
+    margin-bottom: 13px;
 }
 
 #recrun-author, #recrun-date {
-	text-align: left;
-	display: block;
-	font-size: 16px;
-	color: gray;
-	line-height: 17px;
-	font-family: arial, helvetica, sans-serif;
+    text-align: left;
+    display: block;
+    font-size: 16px;
+    color: gray;
+    line-height: 17px;
+    font-family: arial, helvetica, sans-serif;
 }
 
 div.post {
-	margin-bottom: 25px;
+    margin-bottom: 25px;
 }
 
 div.postAuthor, div.postDate {
-	display: inline-block;
+    display: inline-block;
 }
 
 div.postAuthor {
-	font-size: 16px;
-	margin-right: 5px;
+    font-size: 16px;
+    margin-right: 5px;
 }
 
 div.postDate {
-	color: gray;
-	font-size: 14px;
+    color: gray;
+    font-size: 14px;
 }
 
 div.postContent {
-	padding: 0;
-	margin: 0;
+    padding: 0;
+    margin: 0;
 }
 
-#recrun-container p, #recrun-container strong, #recrun-container em, #recrun-container a {
-	font-size: 18px;
+#recrun-container p,
+#recrun-container strong,
+#recrun-container em,
+#recrun-container a {
+    font-size: 18px;
     line-height: 26px;
 }
 
@@ -121,7 +124,7 @@ div.postContent {
 }
 
 #recrun-html p {
-	font-size: 18px;
+    font-size: 18px;
 }
 
 #recrun-html figure {
@@ -134,14 +137,14 @@ div.postContent {
 #recrun-html figure iframe,
 #recrun-html figure embed,
 #recrun-html figure object {
-	padding-top: 2px;
-	padding-bottom: 3px;
-	padding-left: 3px;
-	padding-right: 3px;
+    padding-top: 2px;
+    padding-bottom: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 #recrun-container p {
-	display: block;
+    display: block;
     text-align: left;
     margin-bottom: 15px;
 }
@@ -150,9 +153,9 @@ div.postContent {
 #recrun-container a:hover,
 #recrun-container a:active,
 #recrun-container a:visited {
-	color: #0c65a5;
-	font-size: inherit;
-	text-decoration: none;
+    color: #0c65a5;
+    font-size: inherit;
+    text-decoration: none;
 }
 
 #recrun-container strong {
@@ -160,24 +163,24 @@ div.postContent {
 }
 
 #recrun-container em {
-	font-style: italic;
+    font-style: italic;
 }
 
 * {
-	max-width: 100%;
-	word-wrap: break-word;
+    max-width: 100%;
+    word-wrap: break-word;
 }
 
 pre, code {
-	width: 600px;
-	overflow-x: auto;
-	word-wrap: normal;
-	padding: 3px;
-	/*background-color: #fafafa;*/
+    width: 600px;
+    overflow-x: auto;
+    word-wrap: normal;
+    padding: 3px;
+    /*background-color: #fafafa;*/
 }
 
 #recrun-apiresponse, #recrun-error {
-	display: none;
+    display: none;
     font-size: 20px;
     font-family: arial, helvetica, sans-serif;
     text-align: initial;
@@ -186,6 +189,5 @@ pre, code {
 }
 
 #recrun-retry-button {
-	font-size: 18px;
+    font-size: 18px;
 }
-

@@ -12,6 +12,8 @@ var statusMessage = function(message, time) {
     curTimer = timer;
 };
 
+var backgroundPage = chrome.extension.getBackgroundPage();
+
 var useDiffbot = document.getElementById('useDiffbot-checkbox');
 
 // enable Diffbot settings when "Use Diffbot" is selected
@@ -43,11 +45,12 @@ var saveOptions = function() {
     var options = Object.create(null);
     
     var tokenInput = document.getElementById("token").value;
-    options['token'] = tokenInput.trim(); // trim since Diffbot tokens don't have spaces on the edge
+    // trim since Diffbot tokens don't have spaces on the edge
+    options['token'] = tokenInput.trim();
     
     for (var i = 0; i < checkboxes.length; i++) {
         var checkbox = checkboxes[i];
-        options[checkbox] =  document.getElementById(checkbox + '-checkbox').checked;
+        options[checkbox] = document.getElementById(checkbox + '-checkbox').checked;
     }
     
     localStorage["options"] = JSON.stringify(options);
@@ -56,7 +59,8 @@ var saveOptions = function() {
     chrome.tabs.query({}, function(tabs) {
         for (var i = 0; i < tabs.length; i++) {
             var tab = tabs[i];
-            chrome.tabs.sendMessage(tab.id, {method: 'updateOptions', data: options});
+            chrome.tabs.sendMessage(
+                tab.id, {method: 'updateOptions', data: options});
         }
     });
 };
@@ -90,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // load default options
 document.getElementById('defaults').addEventListener('click', function() {
-    var defaults = chrome.extension.getBackgroundPage().defaultOptions();
+    var defaults = backgroundPage.defaultOptions();
     loadOptions(defaults);
     statusMessage("Defaults Loaded", 1200);
 });
@@ -115,5 +119,4 @@ document.getElementById('revert').addEventListener('click', function() {
 });
 
 // version
-document.getElementById('version').innerText = chrome.extension.getBackgroundPage().getVersion();
-
+document.getElementById('version').innerText = backgroundPage.getVersion();

@@ -1,7 +1,7 @@
 var options = null;
 chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
     options = response;
-})
+});
 
 // url of last recrun'd page
 // Subsequently updated by the recrun message listener
@@ -16,7 +16,9 @@ var sendMsg = function(method, data) {
 };
 
 var getApiUrl = function(token, url) {
-    return 'https://api.diffbot.com/v3/article?html&token=' + token + '&url=' + encodeURIComponent(url);
+    return 'https://api.diffbot.com/v3/article?html'
+                 + '&token=' + token
+                 + '&url=' + encodeURIComponent(url);
 };
 
 var recrunId = 'recrun';
@@ -79,19 +81,23 @@ $(document).on('keydown mousedown', function(e) {
             ignore = true;
         }
         
-        if (downSet.has(which)
-                && (scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight)) {
-            ignore = true;
+        if (downSet.has(which)) {
+            var vertical = scrollElt.scrollTop + scrollElt.clientHeight;
+            if (vertical >= scrollElt.scrollHeight) {
+                ignore = true;
+            }
         }
         
         if (ignore) {
-            // don't need e.preventDefault() or e.stopPropagation(), as they're auto-implied
+            // don't need e.preventDefault() or e.stopPropagation(), as they're
+            // auto-implied
             return false;
         }
     } else if (type === 'mousedown') {
-        // disable middle click scrolling. on your desktop, it sometimes freezes the tab (???)
-        // also now that you've reverted back to keeping the host page's scroll bar, this will prevent
-        // the scenario where a wheel scroll can't continue in the overlay and gets captured by the host
+        // disable middle click scrolling. on your desktop, it sometimes freezes
+        // the tab (???) also now that you've reverted back to keeping the host
+        // page's scroll bar, this will prevent the scenario where a wheel scroll
+        // can't continue in the overlay and gets captured by the host
         if (e.which === 2) {
             return false;
         }
@@ -111,7 +117,8 @@ document.body.addEventListener('scroll', function(e) {
 });
 
 var setPropertyImp = function(element, key, val) {
-    // have to use setProperty for setting !important. This doesn't work: span.style.backgroundColor = 'yellow !important';
+    // have to use setProperty for setting !important.
+    // This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
 };
 
@@ -140,17 +147,21 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                 for (var i = 0; i < attrs.length; i++) {
                     var attr = attrs[i];
                     var attrNameLower = attr.name.toLowerCase();
-                    if (allowedAttrs.has(tagLower) && allowedAttrs.get(tagLower).has(attrNameLower)) {
+                    if (allowedAttrs.has(tagLower)
+                          && allowedAttrs.get(tagLower).has(attrNameLower)) {
                         var val = attr.value;
                         
                         // resolve paths
                         
-                        // http://stackoverflow.com/questions/4071117/uri-starting-with-two-slashes-how-do-they-behave/4071178#4071178
+                        // http://stackoverflow.com/questions/4071117/
+                        //        uri-starting-with-two-slashes-how-do-they-behave/
+                        //        4071178#4071178
                         // http://www.ietf.org/rfc/rfc3986.txt
                         //
                         // Within a representation with a well defined base URI of:
                         //    http://a/b/c/d;p?q
-                        // a relative reference is transformed to its target URI as follows:
+                        // a relative reference is transformed to its target URI
+                        // as follows:
                         //
                         //    "g:h"           =  "g:h"
                         //    "g"             =  "http://a/b/c/g"
@@ -181,9 +192,9 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                 var u = new URL(baseURI);
                                 var origin = u.origin;
                                 
-                                // You confirmed with tests that URLs starting with "//"
-                                // get protocol from baseURI, not from protocol of site
-                                // you're currently on
+                                // You confirmed with tests that URLs starting
+                                // with "//" get protocol from baseURI, not from
+                                // protocol of site you're currently on
                                 if (val.startsWith("//")) {
                                     val = u.protocol + val;
                                 } else if (val.startsWith("/")) {
@@ -196,7 +207,8 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                     // do nothing
                                 } else {
                                     var pathname = u.pathname;
-                                    var basePath = origin + pathname.substring(0, pathname.lastIndexOf("/") + 1);
+                                    var basePath = origin + pathname.substring(
+                                        0, pathname.lastIndexOf("/") + 1);
                                     val = basePath + val;
                                 }   
                             }
@@ -235,7 +247,8 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
 };
 
 var descendantOfTag = function(element, tagName, depth) {
-    depth = typeof depth !== 'undefined' ? depth : -1; // -1 for infinite. not safe.
+    // -1 for infinite. not safe.
+    depth = typeof depth !== 'undefined' ? depth : -1;
     tagName = tagName.toUpperCase();
     var cur = element;
     var counter = 0;
@@ -302,13 +315,16 @@ var fillOverlay = function(article, baseURI) {
     
     // from https://diffbot.com/dev/docs/article/html/
     // block elements
-    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code', 'pre',
-                        'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td', 'dl', 'dt', 'dd'];
+    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code',
+                        'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td',
+                        'dl', 'dt', 'dd'];
     // inline elements (following specs, although I usually treat <br> as block)
     allowedTagsL = allowedTagsL.concat(['br', 'b', 'strong', 'i', 'em', 'u', 'a']);
     // media
     if (options.media) {
-        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio', 'source', 'figcaption', 'iframe', 'embed', 'object']);
+        allowedTagsL = allowedTagsL.concat(['figure', 'img', 'video', 'audio',
+                                            'source', 'figcaption', 'iframe',
+                                            'embed', 'object']);
     }
     var allowedTags = new Set(allowedTagsL);
     var allowedAttrs = new Map();
@@ -321,14 +337,15 @@ var fillOverlay = function(article, baseURI) {
     allowedAttrs.set('iframe', new Set(['src', 'frameborder']));
     allowedAttrs.set('embed', new Set(['src', 'type']));
     allowedAttrs.set('object', new Set(['src', 'type']));
-    
+
     var useDiffbot = options.useDiffbot;
     
     if (!useDiffbot) {
         allowedTags.add('div');
         var htmlString = article['html'];
         sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
-        // wrap img in <figure> for better layout (so same styling rules can be used for Diffbot and readability)
+        // wrap img in <figure> for better layout (so same styling rules can be
+        // used for Diffbot and readability)
         var isImg = function(n) {
             return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === "IMG");
         };
@@ -349,7 +366,8 @@ var fillOverlay = function(article, baseURI) {
             
             // can inject with innerHtml, and then clean up
             // I prefer this approach
-            // generally, this approach protects against malicious and/or malformed html
+            // generally, this approach protects against malicious and/or
+            // malformed html
             
             sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
         } else if ('text' in article) {
@@ -393,7 +411,8 @@ var fillOverlay = function(article, baseURI) {
                 var posts = discussion['posts'];
                 if (posts.length > 0) {
                     var commentsHeader = document.createElement('h2');
-                    commentsHeader.appendChild(document.createTextNode('Comments'));
+                    commentsHeader.appendChild(
+                        document.createTextNode('Comments'));
                     commentsFrag.appendChild(commentsHeader);
                     for (var i = 0; i < posts.length; i++) {
                         var post = posts[i];
@@ -403,14 +422,16 @@ var fillOverlay = function(article, baseURI) {
                         if ('author' in post) {
                             var postAuthorDiv = document.createElement('div');
                             postAuthorDiv.classList.add('postAuthor');
-                            postAuthorDiv.appendChild(document.createTextNode(post['author']));
+                            postAuthorDiv.appendChild(
+                                document.createTextNode(post['author']));
                             postDiv.appendChild(postAuthorDiv);
                         }
                         
                         if ('date' in post) {
                             var postDateDiv = document.createElement('div');
                             postDateDiv.classList.add('postDate');
-                            postDateDiv.appendChild(document.createTextNode(post['date']));
+                            postDateDiv.appendChild(
+                                document.createTextNode(post['date']));
                             postDiv.appendChild(postDateDiv);
                         }
                         
@@ -423,7 +444,8 @@ var fillOverlay = function(article, baseURI) {
                             }
                         } else if ('text' in post) {
                             var postP = document.createElement('p');
-                            postP.appendChild(document.createTextNode(post['text']));
+                            postP.appendChild(
+                                document.createTextNode(post['text']));
                             postContentDiv.appendChild(postP);
                         }
                         
@@ -481,7 +503,7 @@ var recrun = function(article, baseURI) {
     var callback = null;
     
     var url = lastUrl;
-    
+
     var useDiffbot = options.useDiffbot;
     
     // use cached response
@@ -498,7 +520,8 @@ var recrun = function(article, baseURI) {
             recrunShowOnly(['recrun-loader']);
             
             // no need to trim. options page does that.
-            var validToken = ((typeof options.token) === 'string') && options.token.length > 0;
+            var validToken = ((typeof options.token) === 'string')
+                             && options.token.length > 0;
             if (!validToken) {
                 showError(); // will show an error
             } else {
@@ -521,9 +544,11 @@ var recrun = function(article, baseURI) {
                                     && 'objects' in _resp
                                     && _resp['objects'].length > 0) {
                                 var articles = [];
-                                for (var i = 0; i < _resp['objects'].length; i++) {
+                                var len = _resp['objects'].length;
+                                for (var i = 0; i < len; i++) {
                                     var object = _resp['objects'][i];
-                                    if ('type' in object && object['type'] === 'article') {
+                                    if ('type' in object
+                                          && object['type'] === 'article') {
                                         articles.push(object);
                                     }
                                 }
@@ -601,7 +626,9 @@ var keydownScroll = function(key) {
     } else if (key === HOME) {
         amount = -1 * scrollElt.scrollTop;
     } else if (key === END) {
-        amount = scrollElt.scrollHeight - scrollElt.clientHeight - scrollElt.scrollTop;
+        amount = scrollElt.scrollHeight
+               - scrollElt.clientHeight
+               - scrollElt.scrollTop;
     }
     
     scroll(amount);
@@ -611,12 +638,12 @@ var mousewheelScroll = function(wheelDelta) {
     // this will cause scrolling speed to match mouse wheel scrolling
     // with a mouse, but scrolling will be slightly faster with the Mac trackpad
     // than it usually is.
-	
-	// TODO: enable on PC, disable on Mac? (the -533/120 factor, that is)
-	
+    
+    // TODO: enable on PC, disable on Mac? (the -533/120 factor, that is)
+    
     //amount = (-533/120) * wheelDelta;
-	
-	amount = -wheelDelta;
+    
+    amount = -wheelDelta;
     scroll(amount);
 }
 
@@ -644,7 +671,8 @@ var receiveMessage = function(event) {
         }
     }
 };
-//the following is for receiving a message from an iframe, not the extension background
+// the following is for receiving a message from an iframe, not the extension
+// background
 window.addEventListener("message", receiveMessage, false);
 
 sendMsg('ready', null);
