@@ -38,7 +38,6 @@ var diffbotToggle = function() {
 
 useDiffbot.addEventListener('change', diffbotToggle);
 
-//var checkboxes = ['media', 'comments', 'diffbotHtml'];
 var checkboxes = ['media', 'diffbotHtml', 'useDiffbot'];
 
 var saveOptions = function() {

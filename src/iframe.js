@@ -359,7 +359,7 @@ var fillOverlay = function(article, baseURI) {
             }
         }
     } else {
-     // first add primary content
+        // first add primary content
         if (options.diffbotHtml && ('html' in article)) {
             // create recrun content from Diffbot's html field
             var htmlString = article['html'];
@@ -675,4 +675,13 @@ var receiveMessage = function(event) {
 // background
 window.addEventListener("message", receiveMessage, false);
 
-sendMsg('ready', null);
+var NOTIFY_WHEN_READY_POLL_DELAY = 20;
+var notifyWhenReady = function() {
+    var ready = options != null;
+    if (ready) {
+        sendMsg('ready', null);
+    } else {
+        setTimeout(notifyWhenReady, NOTIFY_WHEN_READY_POLL_DELAY);
+    }
+};
+notifyWhenReady();
