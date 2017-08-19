@@ -86,6 +86,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
     if (method === "getOptions") {
         sendResponse(getOptions());
+    } else if (method === "disable") {
+        chrome.browserAction.disable(sender.tab.id);
     } else {
         sendResponse({});
     }

@@ -247,3 +247,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     // alternatively, could return true from this function.
     sendResponse(true);
 });
+
+
+var contentType = document.contentType;
+// maybe all text/* ???
+var compatible = document.doctype !== null
+    || contentType.indexOf('text/html') > -1
+    || contentType.indexOf('text/plain') > -1;
+
+if (!compatible) {
+    chrome.runtime.sendMessage({method: "disable"});
+}
