@@ -73,21 +73,21 @@ $(document).on('keydown mousedown', function(e) {
             recrunClose();
             return;
         }
-        
+
         // ignore these or else they'll get sent to the top frame
         var ignore = false;
         var scrollElt = getScrollElt();
         if (upSet.has(which) && scrollElt.scrollTop <= 0) {
             ignore = true;
         }
-        
+
         if (downSet.has(which)) {
             var vertical = scrollElt.scrollTop + scrollElt.clientHeight;
             if (vertical >= scrollElt.scrollHeight) {
                 ignore = true;
             }
         }
-        
+
         if (ignore) {
             // don't need e.preventDefault() or e.stopPropagation(), as they're
             // auto-implied
@@ -104,7 +104,7 @@ $(document).on('keydown mousedown', function(e) {
     }
 });
 
-document.body.addEventListener('wheel', function(e) {
+document.addEventListener('wheel', function(e) {
     var wheelDelta = e.wheelDeltaY;
     mousewheelScroll(wheelDelta);
     e.preventDefault();
@@ -122,7 +122,7 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
     var parser = new DOMParser();
     var htmldoc = parser.parseFromString(htmlString, "text/html");
     var doc = rootNode.ownerDocument;
-    
+
     // 'rec' as in 'recursive', not 'rec' as in 'recrun'
     var rec = function(n, recrunNode) {
         var type = n.nodeType;
@@ -132,12 +132,12 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
         } else if (type === Node.ELEMENT_NODE) {
             var tag = n.tagName;
             var tagLower = tag.toLowerCase();
-            
+
             var nextRecrunNode = recrunNode;
-            
+
             if (allowedTags.has(tagLower)) {
                 var newElement = doc.createElement(tag);
-                
+
                 var attrs = n.attributes;
                 for (var i = 0; i < attrs.length; i++) {
                     var attr = attrs[i];
@@ -145,9 +145,9 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                     if (allowedAttrs.has(tagLower)
                           && allowedAttrs.get(tagLower).has(attrNameLower)) {
                         var val = attr.value;
-                        
+
                         // resolve paths
-                        
+
                         // http://stackoverflow.com/questions/4071117/
                         //        uri-starting-with-two-slashes-how-do-they-behave/
                         //        4071178#4071178
@@ -181,12 +181,12 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                         //    "../.."         =  "http://a/"
                         //    "../../"        =  "http://a/"
                         //    "../../g"       =  "http://a/g"
-                        
+
                         if (attrNameLower === "src" || attrNameLower === "href") {
                             if (val.indexOf("://") === -1) {
                                 var u = new URL(baseURI);
                                 var origin = u.origin;
-                                
+
                                 // You confirmed with tests that URLs starting
                                 // with "//" get protocol from baseURI, not from
                                 // protocol of site you're currently on
@@ -205,33 +205,33 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                     var basePath = origin + pathname.substring(
                                         0, pathname.lastIndexOf("/") + 1);
                                     val = basePath + val;
-                                }   
+                                }
                             }
                         }
-                        
+
                         newElement.setAttribute(attrNameLower, val);
                     }
                 }
-                
+
                 if (tagLower === 'a') {
                     newElement.setAttribute('target', '_blank');
                 }
-                
+
                 // <video> and <audio> need controls
                 if (tagLower === 'video' || tagLower === 'audio') {
                     newElement.setAttribute('controls', '')
                 }
-                
+
                 recrunNode.appendChild(newElement);
                 nextRecrunNode = newElement;
             }
-                
+
             var _children = n.childNodes;
             for (var i = 0; i < _children.length; i++) {
                 var _child = _children[i];
                 rec(_child, nextRecrunNode);
             }
-            
+
         }
     };
     var children = htmldoc.body.childNodes;
@@ -302,12 +302,12 @@ var fillOverlay = function(article, baseURI) {
             e.appendChild(document.createTextNode(article[field]));
         }
     }
-    
+
     var contentFrag = document.createDocumentFragment();
-    
+
     // the following allowed tags and attributes is specific to Diffbot, but will
     // be used for non-diffbot recrun'ing as well
-    
+
     // from https://diffbot.com/dev/docs/article/html/
     // block elements
     var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code',
@@ -334,7 +334,7 @@ var fillOverlay = function(article, baseURI) {
     allowedAttrs.set('object', new Set(['src', 'type']));
 
     var useDiffbot = options.useDiffbot;
-    
+
     if (!useDiffbot) {
         allowedTags.add('div');
         var htmlString = article['html'];
@@ -358,12 +358,12 @@ var fillOverlay = function(article, baseURI) {
         if (options.diffbotHtml && ('html' in article)) {
             // create recrun content from Diffbot's html field
             var htmlString = article['html'];
-            
+
             // can inject with innerHtml, and then clean up
             // I prefer this approach
             // generally, this approach protects against malicious and/or
             // malformed html
-            
+
             sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
         } else if ('text' in article) {
             // create recrun content from Diffbot's text field
@@ -384,7 +384,7 @@ var fillOverlay = function(article, baseURI) {
                     }
                 }
             }
-            
+
             var text = article['text'];
             var paragraphs = text.split(/\n/g);
             for (var i = 0; i < paragraphs.length; i++) {
@@ -393,11 +393,11 @@ var fillOverlay = function(article, baseURI) {
                 contentFrag.appendChild(p);
             }
         }
-        
+
         // next add discussion
-        
+
         // TODO: indent comments based on parent/child relationships
-        
+
         var commentsFrag = document.createDocumentFragment();
         // comments currently disabled
         if (false && options.comments && ('discussion' in article)) {
@@ -413,7 +413,7 @@ var fillOverlay = function(article, baseURI) {
                         var post = posts[i];
                         var postDiv = document.createElement('div');
                         postDiv.classList.add('post');
-                        
+
                         if ('author' in post) {
                             var postAuthorDiv = document.createElement('div');
                             postAuthorDiv.classList.add('postAuthor');
@@ -421,7 +421,7 @@ var fillOverlay = function(article, baseURI) {
                                 document.createTextNode(post['author']));
                             postDiv.appendChild(postAuthorDiv);
                         }
-                        
+
                         if ('date' in post) {
                             var postDateDiv = document.createElement('div');
                             postDateDiv.classList.add('postDate');
@@ -429,7 +429,7 @@ var fillOverlay = function(article, baseURI) {
                                 document.createTextNode(post['date']));
                             postDiv.appendChild(postDateDiv);
                         }
-                        
+
                         var postContentDiv = document.createElement('div');
                         postContentDiv.classList.add('postContent');
                         if (options.diffbotHtml) {
@@ -443,12 +443,12 @@ var fillOverlay = function(article, baseURI) {
                                 document.createTextNode(post['text']));
                             postContentDiv.appendChild(postP);
                         }
-                        
+
                         if (!('parentId' in post) && i < posts.length-1) {
                             var postSep = document.createElement('hr');
                             postContentDiv.appendChild(postSep);
                         }
-                        
+
                         postDiv.appendChild(postContentDiv);
                         commentsFrag.appendChild(postDiv);
                     }
@@ -456,13 +456,13 @@ var fillOverlay = function(article, baseURI) {
             }
         }
     }
-    
+
     var e = getRecrunElementById('recrun-html');
-    
+
     if (contentFrag) {
         e.appendChild(contentFrag);
     }
-    
+
     if (commentsFrag) {
         e.appendChild(commentsFrag);
     }
@@ -473,7 +473,7 @@ var recrunClose = function() {
 };
 
 // reset recrun content to default
-var reset = function() { 
+var reset = function() {
     ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
     for (var i = 0; i < ids.length; i++) {
         var cur = ids[i];
@@ -483,24 +483,24 @@ var reset = function() {
 
 var recrun = function(article, baseURI) {
     reset();
-    
+
     var showDiffbot = function(article) {
         return function() {
             fillOverlay(article, baseURI);
             recrunShowOnly(['recrun-apiresponse']);
         }
     };
-    
+
     var showError = function() {
         recrunShowOnly(['recrun-error']);
     };
-    
+
     var callback = null;
-    
+
     var url = lastUrl;
 
     var useDiffbot = options.useDiffbot;
-    
+
     // use cached response
     // also make sure cached response corresponds to current url (since url
     // can change without a full page reload)
@@ -513,7 +513,7 @@ var recrun = function(article, baseURI) {
         callback = function() {
             var TIMEOUT = 40000;
             recrunShowOnly(['recrun-loader']);
-            
+
             // no need to trim. options page does that.
             var validToken = ((typeof options.token) === 'string')
                              && options.token.length > 0;
@@ -565,7 +565,7 @@ var recrun = function(article, baseURI) {
             }
         };
     }
-    
+
     if (callback) {
         callback();
     }
@@ -606,7 +606,7 @@ var keydownScroll = function(key) {
     var scrollElt = getRecrunElementById('scroll');
     var n = 40;
     var h = scrollElt.clientHeight * 0.85;
-    
+
     var amount = 0;
 
     if (key === UP) {
@@ -624,7 +624,7 @@ var keydownScroll = function(key) {
                - scrollElt.clientHeight
                - scrollElt.scrollTop;
     }
-    
+
     scroll(amount);
 };
 
