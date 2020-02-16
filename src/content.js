@@ -20,9 +20,9 @@ var inject = function() {
         }
     });
 
-    //create a unique id that won't clash with any other ids on the page.
-    //doesn't have to be static since we don't refer to the id statically
-    //(no references in css, etc.).
+    // create a unique id that won't clash with any other ids on the page.
+    // doesn't have to be static since we don't refer to the id statically
+    // (no references in css, etc.).
     var createUniqueId = function() {
         var tries = 0;
         while (tries < 20) {
@@ -144,13 +144,12 @@ var inject = function() {
 
     var recrunClose = function() {
         enableScroll();
-        //$(iframe).hide();
         $(iframe).fadeOut(200, function() {
             appendTo.removeChild(iframe);
         });
     };
 
-// store last Diffbot response here
+    // store last Diffbot response here
     var cacheDiffbot = null;
 
     var recrunOpen = function(retry) {
@@ -191,24 +190,22 @@ var inject = function() {
     ready = false;
 
     var receiveMessage = function(event) {
-        if (event.origin === (new URL(chrome.extension.getURL(''))).origin) {
-            var method = event.data['method'];
-            var data = event.data['data'];
-            if (method === 'close') {
-                recrunClose();
-            } else if (method === 'ready') {
-                ready = true;
-                if (todo) {
-                    // TODO: is there any scenario where you should poll here?
-                    //       seemingly, todo should always be able to run at this point
-                    todo();
-                    todo = null;
-                }
-            } else if (method === 'retry') {
-                recrunOpen(true);
-            } else if (method === 'cacheDiffbot') {
-                cacheDiffbot = data;
+        var method = event.data['method'];
+        var data = event.data['data'];
+        if (method === 'close') {
+            recrunClose();
+        } else if (method === 'ready') {
+            ready = true;
+            if (todo) {
+                // TODO: is there any scenario where you should poll here?
+                //       seemingly, todo should always be able to run at this point
+                todo();
+                todo = null;
             }
+        } else if (method === 'retry') {
+            recrunOpen(true);
+        } else if (method === 'cacheDiffbot') {
+            cacheDiffbot = data;
         }
     };
 
