@@ -104,17 +104,12 @@ $(document).on('keydown mousedown', function(e) {
     }
 });
 
-$(document).on('mousewheel', function(e) {
-    var wheelDelta = e.originalEvent.wheelDelta;
+document.body.addEventListener('wheel', function(e) {
+    var wheelDelta = e.wheelDeltaY;
     mousewheelScroll(wheelDelta);
-    return false;
-});
-
-document.body.addEventListener('scroll', function(e) {
-    var scroll = getScrollElt();
-    var amount = e.detail;
-    scroll.scrollTop += amount;
-});
+    e.preventDefault();
+    e.stopPropagation();
+}, {passive: false});
 
 var setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important.
@@ -604,8 +599,7 @@ document.getElementById('recrun-close').onclick = function() {
 };
 
 var scroll = function(amount) {
-    var evt = new CustomEvent('scroll', {'detail': amount});
-    document.body.dispatchEvent(evt);
+    getScrollElt().scrollTop += amount;
 };
 
 var keydownScroll = function(key) {
@@ -638,11 +632,6 @@ var mousewheelScroll = function(wheelDelta) {
     // this will cause scrolling speed to match mouse wheel scrolling
     // with a mouse, but scrolling will be slightly faster with the Mac trackpad
     // than it usually is.
-    
-    // TODO: enable on PC, disable on Mac? (the -533/120 factor, that is)
-    
-    //amount = (-533/120) * wheelDelta;
-    
     amount = -wheelDelta;
     scroll(amount);
 };

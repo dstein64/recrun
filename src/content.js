@@ -107,7 +107,7 @@ var enableScroll = function() {
     $('html').off(disableScrollEvents, disableScrollHandler);
 };
 
-var disableScrollEvents = 'scroll mousewheel touchmove keydown mousedown';
+var disableScrollEvents = 'scroll wheel touchmove keydown mousedown';
 
 var disableScrollHandler = function(e) {
     if (!exists() || !shown()) {
@@ -120,10 +120,8 @@ var disableScrollHandler = function(e) {
     var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
 
     var scrollKeyPress = type === 'keydown' && s.has(e.which);
-    var scrollMouseWheel = type === 'mousewheel';
+    var scrollMouseWheel = type === 'wheel';
     var middleClick = type === 'mousedown' && e.which === 2;
-    
-    // returning false calls e.preventDefault() and e.stopPropagation()
 
     if (type === 'keydown' && e.which === ESC) {
         recrunClose();
@@ -131,7 +129,7 @@ var disableScrollHandler = function(e) {
         var key = e.which;
         sendMsg('keydownscroll', key);
     } else if (scrollMouseWheel) {
-        var wheelDelta = e.originalEvent.wheelDeltaY;
+        var wheelDelta = e.wheelDeltaY;
         sendMsg('mousewheelscroll', wheelDelta);
     } else if (middleClick) {
         // not sure how to capture scrolling from middle click, so just capture
@@ -139,7 +137,8 @@ var disableScrollHandler = function(e) {
     } else {
         return true;
     }
-    return false;
+    e.preventDefault();
+    e.stopPropagation();
 };
 
 var recrunClose = function() {
