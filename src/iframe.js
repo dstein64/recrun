@@ -292,7 +292,7 @@ var getElements = function(frag, fn) {
             var child = children[i];
             rec(child);
         }
-    }
+    };
     rec(frag);
     return l;
 };
@@ -583,7 +583,7 @@ var dppMatch = function(u1, u2) {
     return (U1.port === U2.port
             && U1.protocol === U2.protocol
             && U1.host === U2.host);
-}
+};
 
 document.getElementById('recrun-retry-button').onclick = function() {
     recrunShowOnly(['recrun-loader']);
@@ -606,7 +606,7 @@ document.getElementById('recrun-close').onclick = function() {
 var scroll = function(amount) {
     var evt = new CustomEvent('scroll', {'detail': amount});
     document.body.dispatchEvent(evt);
-}
+};
 
 var keydownScroll = function(key) {
     var scrollElt = getRecrunElementById('scroll');
@@ -632,7 +632,7 @@ var keydownScroll = function(key) {
     }
     
     scroll(amount);
-}
+};
 
 var mousewheelScroll = function(wheelDelta) {
     // this will cause scrolling speed to match mouse wheel scrolling
@@ -645,7 +645,7 @@ var mousewheelScroll = function(wheelDelta) {
     
     amount = -wheelDelta;
     scroll(amount);
-}
+};
 
 var receiveMessage = function(event) {
     var method = event.data['method'];
