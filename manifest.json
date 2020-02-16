@@ -1,12 +1,7 @@
 {
-   "content_scripts": [ {
-      "run_at": "document_idle",
-      "js": [ "src/lib/jquery.js",
-              "src/lib/readabilitySAX/readabilitySAX.js",
-              "src/content.js" ],
-      "matches": [ "<all_urls>" ],
-      "all_frames": false
-   } ],
+   "permissions": [
+       "activeTab"
+   ],
    "options_page": "src/options.html",
    "description": "Retain essential content, remove unwanted noise.",
    "manifest_version": 2,

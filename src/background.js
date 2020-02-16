@@ -50,9 +50,9 @@ var defaultOptions = function() {
     if (!opts) {
         opts = Object.create(null);
     }
-    
+
     var defaults = defaultOptions();
-    
+
     var keys = Object.keys(defaults);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
@@ -60,26 +60,48 @@ var defaultOptions = function() {
             opts[key] = defaults[key];
         }
     }
-    
+
     localStorage["options"] = JSON.stringify(opts);
 })();
 
 chrome.browserAction.onClicked.addListener(function() {
-    chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
-        chrome.tabs.sendMessage(
-            tabs[0].id,
-            {method: 'recrun', data: {url: tabs[0].url}},
-            {},
-            function(resp) {
-                if (chrome.runtime.lastError) {
-                    var errmsg = "recrun couldn't start on this page.\n\n"
-                        + "Reload the page and try again.\n\n"
-                        + "(this occurs on tabs that were open while recrun "
-                        + "was installed, updated, or re-enabled)"
-                    alert(errmsg);
-                }
-            });
-    });
+    var recrun = function() {
+        chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
+            chrome.tabs.sendMessage(
+                tabs[0].id,
+                {method: 'recrun', data: {url: tabs[0].url}},
+                {},
+                function(resp) {
+                    if (chrome.runtime.lastError) {
+                        var errmsg = "recrun couldn't start on this page.\n\n"
+                            + "Reload the page and try again.\n\n"
+                            + "(this occurs on tabs that were open while recrun "
+                            + "was installed, updated, or re-enabled)";
+                        alert(errmsg);
+                    }
+                });
+        });
+    };
+    // Running recrun multiple times causes the following scripts to be executed
+    // multiple times in the context of the same page. This is not a problem for
+    // jquery.js nor readabilitySAX.js. Special handling in content.js prevents
+    // the relevant code from executing more than once, which would be problematic.
+    var scripts = [
+        'src/lib/jquery.js',
+        'src/lib/readabilitySAX/readabilitySAX.js',
+        'src/content.js'
+    ];
+    let fn = recrun;
+    for (var i = scripts.length - 1; i >= 0; --i) {
+        let script = scripts[i];
+        let fn_ = fn;
+        fn = function() {
+            chrome.tabs.executeScript({
+                file: script
+            }, fn_);
+        }
+    }
+    fn();
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
