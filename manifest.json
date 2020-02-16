@@ -26,6 +26,5 @@
                                  "src/options.html",
                                  "src/iframe.html",
                                  "src/content.html",
-                                 "src/lib/jquery.js" ],
-   "minimum_chrome_version": "41"
+                                 "src/lib/jquery.js" ]
 }
