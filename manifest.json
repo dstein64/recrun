@@ -4,7 +4,7 @@
       "js": [ "src/lib/jquery.js",
               "src/lib/readabilitySAX/readabilitySAX.js",
               "src/content.js" ],
-      "matches": [ "*://*/*" ],
+      "matches": [ "<all_urls>" ],
       "all_frames": false
    } ],
    "options_page": "src/options.html",
