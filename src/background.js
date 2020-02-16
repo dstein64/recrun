@@ -86,6 +86,11 @@ chrome.browserAction.onClicked.addListener(function() {
     // multiple times in the context of the same page. This is not a problem for
     // jquery.js nor readabilitySAX.js. Special handling in content.js prevents
     // the relevant code from executing more than once, which would be problematic.
+    // This is an alternative to using broad host permissions for content scripts,
+    // which the Chrome Web Store warns developers about. A downside to this approach
+    // is that jquery.js and readabilitySAX.js may be injected multiple times, even
+    // in some cases just to close the recrun window (e.g., when clicking the recrun
+    // icon when a recrun window is already open).
     var scripts = [
         'src/lib/jquery.js',
         'src/lib/readabilitySAX/readabilitySAX.js',
