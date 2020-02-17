@@ -39,7 +39,7 @@ var defaultOptions = function() {
     options['token'] = '';
     options['media'] = true;
     options['comments'] = false;
-    options['diffbotHtml'] = true;
+    options['diffbotHtml'] = false;
     options['useDiffbot'] = false;
     return options;
 };
