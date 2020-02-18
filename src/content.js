@@ -212,44 +212,31 @@ var receiveMessage = function(event) {
 // background
 window.addEventListener("message", receiveMessage, false);
 
+var compatible = function() {
+    return document.contentType.indexOf('text/html') > -1
+};
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
-
+    var response = {method: method};
+    response.success = true;
     if (method === "recrun") {
-        var _shown = shown(); // could have a toggle flag for this
-        if (!_shown) {
+        if (!compatible()) {
+            response.success = false;
+        } else if (!shown()) {
             todo = function () {
                 recrunOpen(false);
             };
             appendTo.appendChild(iframe);
-
-            // TODO: possibly some error checking such that if user tries to
-            //       recrun, but recrun'ing doesn't finish within X seconds,
-            //       assume a problematic site (e.g., a site that removes the
-            //       recrun iframe)
-            var error = false;
-            if (error) {
-                var errmsg = "recrun couldn't run on this page.\n\n"
-                    + "(this occurs on incompatible pages)";
-                alert(errmsg);
-            }
         } else {
             recrunClose();
         }
+    } else if (method === "ping") {
+        response.success = true;
     }
-
-    // this prevents chrome.runtime.lastError from firing for no response
+    // sending a respnse prevents chrome.runtime.lastError from firing for
+    // no response.
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=586155
     // alternatively, could return true from this function.
-    sendResponse(true);
+    sendResponse(response);
 });
-
-var contentType = document.contentType;
-// maybe all text/* ???
-var compatible = document.doctype !== null
-    || contentType.indexOf('text/html') > -1
-    || contentType.indexOf('text/plain') > -1;
-
-if (!compatible) {
-    chrome.runtime.sendMessage({method: "disable"});
-}

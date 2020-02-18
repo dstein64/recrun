@@ -65,7 +65,7 @@ var defaultOptions = function() {
 })();
 
 chrome.browserAction.onClicked.addListener(function() {
-    function inject(callback=function() {}) {
+    var inject = function(callback=function() {}) {
         var scripts = [
             'src/lib/jquery.js',
             'src/lib/readabilitySAX/readabilitySAX.js',
@@ -82,26 +82,33 @@ chrome.browserAction.onClicked.addListener(function() {
             }
         }
         fn();
-    }
-    var recrun = function(tries=0) {
+    };
+    var recrun = function() {
         chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
             chrome.tabs.sendMessage(
                 tabs[0].id,
                 {method: 'recrun', data: {url: tabs[0].url}},
                 {},
                 function(resp) {
-                    if (chrome.runtime.lastError) {
-                        if (tries == 0) {
-                            inject(function() {recrun(tries + 1)});
-                        } else {
-                            var errmsg = "recrun couldn't start on this page.";
-                            alert(errmsg);
-                        }
+                    if (chrome.runtime.lastError || resp === 'undefined' || !resp.success) {
+                        alert("recrun couldn't run on this page.");
                     }
                 });
         });
     };
-    recrun();
+    chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
+        chrome.tabs.sendMessage(
+            tabs[0].id,
+            {method: 'ping', data: {url: tabs[0].url}},
+            {},
+            function(resp) {
+                if (chrome.runtime.lastError) {
+                    inject(recrun);
+                } else {
+                    recrun();
+                }
+            });
+    });
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
