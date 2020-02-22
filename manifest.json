@@ -1,7 +1,5 @@
 {
-  "permissions": [
-    "activeTab"
-  ],
+  "permissions": ["activeTab"],
   "options_page": "src/options.html",
   "description": "Retain essential content, remove unwanted noise.",
   "manifest_version": 2,
