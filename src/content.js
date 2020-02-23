@@ -75,7 +75,7 @@ var sendMsg = function(method, data) {
             'method': method,
             'data': data
         },
-        'chrome-extension://' + chrome.runtime.id);
+        (new URL(iframe.src)).origin);
 };
 
 var exists = function() {
@@ -88,16 +88,15 @@ var shown = function() {
 
 var ESC = 27;
 
+var LEFT = 37;
 var UP = 38;
+var RIGHT = 39;
 var DOWN = 40;
 var PGUP = 33;
 var PGDOWN = 34;
 var HOME = 36;
 var END = 35;
 var SPACE = 32;
-
-var upSet = new Set([UP, PGUP, HOME]);
-var downSet = new Set([DOWN, PGDOWN, END, SPACE]);
 
 var disableScroll = function() {
     $('html').on(disableScrollEvents, disableScrollHandler);
@@ -117,7 +116,7 @@ var disableScrollHandler = function(e) {
 
     var type = e.type;
 
-    var s = new Set([UP, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
+    var s = new Set([LEFT, UP, RIGHT, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
 
     var scrollKeyPress = type === 'keydown' && s.has(e.which);
     var scrollMouseWheel = type === 'wheel';
@@ -129,8 +128,7 @@ var disableScrollHandler = function(e) {
         var key = e.which;
         sendMsg('keydownscroll', key);
     } else if (scrollMouseWheel) {
-        var wheelDelta = e.wheelDeltaY;
-        sendMsg('mousewheelscroll', wheelDelta);
+        sendMsg('mousewheelscroll', {x: e.deltaX, y: e.deltaY});
     } else if (middleClick) {
         // not sure how to capture scrolling from middle click, so just capture
         // and block so background page doesn't move

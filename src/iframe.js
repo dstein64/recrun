@@ -54,7 +54,9 @@ var getScrollElt = function() {
 
 var ESC = 27;
 
+var LEFT = 37;
 var UP = 38;
+var RIGHT = 39;
 var DOWN = 40;
 var PGUP = 33;
 var PGDOWN = 34;
@@ -105,8 +107,7 @@ $(document).on('keydown mousedown', function(e) {
 });
 
 document.addEventListener('wheel', function(e) {
-    var wheelDelta = e.wheelDeltaY;
-    mousewheelScroll(wheelDelta);
+    scroll(e.deltaX, e.deltaY);
     e.preventDefault();
     e.stopPropagation();
 }, {passive: false});
@@ -598,8 +599,9 @@ document.getElementById('recrun-close').onclick = function() {
     recrunClose();
 };
 
-var scroll = function(amount) {
-    getScrollElt().scrollTop += amount;
+var scroll = function(x, y) {
+    getScrollElt().scrollLeft += x;
+    getScrollElt().scrollTop += y;
 };
 
 var keydownScroll = function(key) {
@@ -607,33 +609,30 @@ var keydownScroll = function(key) {
     var n = 40;
     var h = scrollElt.clientHeight * 0.85;
 
-    var amount = 0;
+    var x = 0;
+    var y = 0;
 
-    if (key === UP) {
-        amount = -1 * n;
+    if (key === LEFT) {
+        x = -1 * n;
+    } else if (key === UP) {
+        y = -1 * n;
+    } else if (key === RIGHT) {
+        x = n;
     } else if (key === DOWN) {
-        amount = n;
+        y = n;
     } else if (key === SPACE || key === PGDOWN) {
-        amount = h;
+        y = h;
     } else if (key === PGUP) {
-        amount = -1 * h;
+        y = -1 * h;
     } else if (key === HOME) {
-        amount = -1 * scrollElt.scrollTop;
+        y = -1 * scrollElt.scrollTop;
     } else if (key === END) {
-        amount = scrollElt.scrollHeight
+        y = scrollElt.scrollHeight
                - scrollElt.clientHeight
                - scrollElt.scrollTop;
     }
 
-    scroll(amount);
-};
-
-var mousewheelScroll = function(wheelDelta) {
-    // this will cause scrolling speed to match mouse wheel scrolling
-    // with a mouse, but scrolling will be slightly faster with the Mac trackpad
-    // than it usually is.
-    amount = -wheelDelta;
-    scroll(amount);
+    scroll(x, y);
 };
 
 var receiveMessage = function(event) {
@@ -648,12 +647,10 @@ var receiveMessage = function(event) {
             }
             var baseURI = data['baseURI'];
             recrun(article, baseURI);
-        } else if (method === 'amountscroll') {
-            scroll(data);
         } else if (method === 'keydownscroll') {
             keydownScroll(data);
         } else if (method === 'mousewheelscroll') {
-            mousewheelScroll(data);
+            scroll(data.x, data.y);
         } else if (method === 'updateOptions') {
             // reset saved state, so the next call will re-fetch
             options = data;
