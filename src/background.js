@@ -109,7 +109,9 @@ chrome.browserAction.onClicked.addListener(function(tab) {
                 {method: 'ping', data: {url: tab.url}},
                 {},
                 function(resp) {
-                    if (chrome.runtime.lastError) {
+                    // On Firefox, in some cases just checking for lastError is not
+                    // sufficient.
+                    if (chrome.runtime.lastError || !resp) {
                         inject(recrun);
                     } else {
                         recrun();
