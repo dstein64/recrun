@@ -24,14 +24,7 @@ var getOptions = function() {
 };
 
 var getVersion = function() {
-    var version = 0;
-    // chrome.app.getDetails().version is undocumented, so have a fallback
-    try {
-        version = chrome.app.getDetails().version;
-    } catch (e) {
-        version = chrome.runtime.getManifest().version;
-    }
-    return version;
+    return chrome.runtime.getManifest().version;
 };
 
 var defaultOptions = function() {
