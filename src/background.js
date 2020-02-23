@@ -85,6 +85,9 @@ var inject = function(callback=function() {}) {
 
 chrome.browserAction.onClicked.addListener(function(tab) {
     var showError = function() {
+        // WARN: This doesn't work on Firefox.
+        // "alert() is not supported in background windows;
+        //  please use console.log instead. background.js:88:14"
         alert('recrun couldn\'t run on this page.');
     };
     var recrun = function() {
