@@ -47,6 +47,14 @@ a.tooltip span {
     box-shadow: 5px 5px 8px #CCC;
 }
 
+/*
+ * Force the empty #status span to take up space
+ * (\200b is Unicode zero-width space).
+ */
+#status:after {
+    content: '\200b';
+}
+
 </style>
 </head>
 

@@ -6,13 +6,13 @@ var updateOptions = function(opts) {
         sendMsg('updateOptions', options);
     }
 };
-chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
     var opts = response;
     updateOptions(opts);
 });
 chrome.runtime.onMessage.addListener(function(request) {
     var method = request.method;
-    if (method === "updateOptions") {
+    if (method === 'updateOptions') {
         updateOptions(request.data);
         // clear Diffbot cache
         cacheDiffbot = null;
@@ -83,7 +83,7 @@ var exists = function() {
 };
 
 var shown = function() {
-    return iframe && $(iframe).is(":visible");
+    return iframe && $(iframe).is(':visible');
 };
 
 var ESC = 27;
@@ -210,7 +210,7 @@ var receiveMessage = function(event) {
 
 // the following is for receiving a message from an iframe, not the extension
 // background
-window.addEventListener("message", receiveMessage, false);
+window.addEventListener('message', receiveMessage, false);
 
 var compatible = function() {
     return document.contentType.indexOf('text/html') > -1
@@ -220,7 +220,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
     var response = {method: method};
     response.success = true;
-    if (method === "recrun") {
+    if (method === 'recrun') {
         if (!compatible()) {
             response.success = false;
         } else if (!shown()) {
@@ -231,7 +231,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         } else {
             recrunClose();
         }
-    } else if (method === "ping") {
+    } else if (method === 'ping') {
         response.success = true;
     }
     // sending a respnse prevents chrome.runtime.lastError from firing for

@@ -1,7 +1,7 @@
 // if already using Diffbot, make sure new option, useDiffbot, set to true
 // can eventually remove this
 (function() {
-    var opts = localStorage["options"];
+    var opts = localStorage['options'];
     if (opts) {
         opts = JSON.parse(opts);
         if (!('useDiffbot' in opts)) {
@@ -10,13 +10,13 @@
             } else {
                 opts['useDiffbot'] = false;
             }
-            localStorage["options"] = JSON.stringify(opts);
+            localStorage['options'] = JSON.stringify(opts);
         }
     }
 })();
 
 var getOptions = function() {
-    var opts = localStorage["options"];
+    var opts = localStorage['options'];
     if (opts) {
         opts = JSON.parse(opts);
     }
@@ -61,61 +61,72 @@ var defaultOptions = function() {
         }
     }
 
-    localStorage["options"] = JSON.stringify(opts);
+    localStorage['options'] = JSON.stringify(opts);
 })();
 
-chrome.browserAction.onClicked.addListener(function() {
-    var inject = function(callback=function() {}) {
-        var scripts = [
-            'src/lib/jquery.js',
-            'src/lib/readabilitySAX/readabilitySAX.js',
-            'src/content.js'
-        ];
-        let fn = callback;
-        for (var i = scripts.length - 1; i >= 0; --i) {
-            let script = scripts[i];
-            let fn_ = fn;
-            fn = function() {
-                chrome.tabs.executeScript({
-                    file: script
-                }, fn_);
-            }
+var inject = function(callback=function() {}) {
+    var scripts = [
+        'src/lib/jquery.js',
+        'src/lib/readabilitySAX/readabilitySAX.js',
+        'src/content.js'
+    ];
+    let fn = callback;
+    for (var i = scripts.length - 1; i >= 0; --i) {
+        let script = scripts[i];
+        let fn_ = fn;
+        fn = function() {
+            chrome.tabs.executeScript({
+                file: script
+            }, fn_);
         }
-        fn();
+    }
+    fn();
+};
+
+chrome.browserAction.onClicked.addListener(function(tab) {
+    var showError = function() {
+        alert('recrun couldn\'t run on this page.');
     };
     var recrun = function() {
-        chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
+        chrome.tabs.sendMessage(
+            tab.id,
+            {method: 'recrun', data: {url: tab.url}},
+            {},
+            function(resp) {
+                if (chrome.runtime.lastError || resp === 'undefined' || !resp.success) {
+                    showError();
+                }
+            });
+    };
+    // First check if the current page is supported by trying to inject no-op code.
+    // (e.g., https://chrome.google.com/webstore, chrome://extensions/, and other pages
+    // do not support extensions).
+    chrome.tabs.executeScript(
+        {code: '(function(){})();'},
+        function() {
+            if (chrome.runtime.lastError) {
+                showError();
+                return;
+            }
             chrome.tabs.sendMessage(
-                tabs[0].id,
-                {method: 'recrun', data: {url: tabs[0].url}},
+                tab.id,
+                {method: 'ping', data: {url: tab.url}},
                 {},
                 function(resp) {
-                    if (chrome.runtime.lastError || resp === 'undefined' || !resp.success) {
-                        alert("recrun couldn't run on this page.");
+                    if (chrome.runtime.lastError) {
+                        inject(recrun);
+                    } else {
+                        recrun();
                     }
                 });
         });
-    };
-    chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs) {
-        chrome.tabs.sendMessage(
-            tabs[0].id,
-            {method: 'ping', data: {url: tabs[0].url}},
-            {},
-            function(resp) {
-                if (chrome.runtime.lastError) {
-                    inject(recrun);
-                } else {
-                    recrun();
-                }
-            });
-    });
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     var method = request.method;
-    if (method === "getOptions") {
+    if (method === 'getOptions') {
         sendResponse(getOptions());
-    } else if (method === "disable") {
+    } else if (method === 'disable') {
         chrome.browserAction.disable(sender.tab.id);
     } else {
         sendResponse({});
