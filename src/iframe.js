@@ -48,75 +48,15 @@ var recrunShowOnly = function(ids) {
     }
 };
 
-var getScrollElt = function() {
-    return document.getElementById('scroll');
-};
-
 var ESC = 27;
 
-var LEFT = 37;
-var UP = 38;
-var RIGHT = 39;
-var DOWN = 40;
-var PGUP = 33;
-var PGDOWN = 34;
-var HOME = 36;
-var END = 35;
-var SPACE = 32;
-
-var upSet = new Set([UP, PGUP, HOME]);
-var downSet = new Set([DOWN, PGDOWN, END, SPACE]);
-
-$(document).on('keydown mousedown', function(e) {
-    var type = e.type;
-    if (type === 'keydown') {
-        var which = e.which;
-        if (which === ESC) {
-            recrunClose();
-            return;
-        }
-
-        // ignore these or else they'll get sent to the top frame
-        var ignore = false;
-        var scrollElt = getScrollElt();
-        if (upSet.has(which) && scrollElt.scrollTop <= 0) {
-            ignore = true;
-        }
-
-        if (downSet.has(which)) {
-            var vertical = scrollElt.scrollTop + scrollElt.clientHeight;
-            if (vertical >= scrollElt.scrollHeight) {
-                ignore = true;
-            }
-        }
-
-        if (ignore) {
-            // don't need e.preventDefault() or e.stopPropagation(), as they're
-            // auto-implied
-            return false;
-        }
-    } else if (type === 'mousedown') {
-        // disable middle click scrolling. on your desktop, it sometimes freezes
-        // the tab (???) also now that you've reverted back to keeping the host
-        // page's scroll bar, this will prevent the scenario where a wheel scroll
-        // can't continue in the overlay and gets captured by the host
-        if (e.which === 2) {
-            return false;
-        }
-    }
+$(document).on('keydown', function(e) {
+    if (e.type !== 'keydown')
+        return;
+    if (e.which !== ESC)
+        return;
+    recrunClose();
 });
-
-document.addEventListener('wheel', function(e) {
-    scroll(e.deltaX, e.deltaY);
-    e.preventDefault();
-    e.stopPropagation();
-}, {passive: false});
-
-var setPropertyImp = function(element, key, val) {
-    // have to use setProperty for setting !important.
-    // This doesn't work: span.style.backgroundColor = 'yellow !important';
-    element.style.setProperty(key, val, 'important');
-};
 
 // have to pass baseURI for resolving relative links
 var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
@@ -495,12 +435,8 @@ var recrun = function(article, baseURI) {
     var showError = function() {
         recrunShowOnly(['recrun-error']);
     };
-
     var callback = null;
-
     var url = lastUrl;
-
-    var useDiffbot = options.useDiffbot;
 
     // use cached response
     // also make sure cached response corresponds to current url (since url
@@ -566,7 +502,6 @@ var recrun = function(article, baseURI) {
             }
         };
     }
-
     if (callback) {
         callback();
     }
@@ -599,42 +534,6 @@ document.getElementById('recrun-close').onclick = function() {
     recrunClose();
 };
 
-var scroll = function(x, y) {
-    getScrollElt().scrollLeft += x;
-    getScrollElt().scrollTop += y;
-};
-
-var keydownScroll = function(key) {
-    var scrollElt = getRecrunElementById('scroll');
-    var n = 40;
-    var h = scrollElt.clientHeight * 0.85;
-
-    var x = 0;
-    var y = 0;
-
-    if (key === LEFT) {
-        x = -1 * n;
-    } else if (key === UP) {
-        y = -1 * n;
-    } else if (key === RIGHT) {
-        x = n;
-    } else if (key === DOWN) {
-        y = n;
-    } else if (key === SPACE || key === PGDOWN) {
-        y = h;
-    } else if (key === PGUP) {
-        y = -1 * h;
-    } else if (key === HOME) {
-        y = -1 * scrollElt.scrollTop;
-    } else if (key === END) {
-        y = scrollElt.scrollHeight
-               - scrollElt.clientHeight
-               - scrollElt.scrollTop;
-    }
-
-    scroll(x, y);
-};
-
 var receiveMessage = function(event) {
     var method = event.data['method'];
     var data = event.data['data'];
@@ -647,10 +546,6 @@ var receiveMessage = function(event) {
             }
             var baseURI = data['baseURI'];
             recrun(article, baseURI);
-        } else if (method === 'keydownscroll') {
-            keydownScroll(data);
-        } else if (method === 'mousewheelscroll') {
-            scroll(data.x, data.y);
         } else if (method === 'updateOptions') {
             // reset saved state, so the next call will re-fetch
             options = data;

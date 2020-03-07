@@ -88,59 +88,29 @@ var shown = function() {
 
 var ESC = 27;
 
-var LEFT = 37;
-var UP = 38;
-var RIGHT = 39;
-var DOWN = 40;
-var PGUP = 33;
-var PGDOWN = 34;
-var HOME = 36;
-var END = 35;
-var SPACE = 32;
-
-var disableScroll = function() {
-    $('html').on(disableScrollEvents, disableScrollHandler);
+var registerEvents = function() {
+    $('html').on('keydown', keyHandler);
 };
 
-var enableScroll = function() {
-    $('html').off(disableScrollEvents, disableScrollHandler);
+var deregisterEvents = function() {
+    $('html').off('keydown', keyHandler);
 };
 
-var disableScrollEvents = 'scroll wheel touchmove keydown mousedown';
-
-var disableScrollHandler = function(e) {
+var keyHandler = function(e) {
     if (!exists() || !shown()) {
-        enableScroll();
+        deregisterEvents();
         return true;
     }
-
-    var type = e.type;
-
-    var s = new Set([LEFT, UP, RIGHT, DOWN, PGDOWN, PGUP, SPACE, HOME, END, ESC]);
-
-    var scrollKeyPress = type === 'keydown' && s.has(e.which);
-    var scrollMouseWheel = type === 'wheel';
-    var middleClick = type === 'mousedown' && e.which === 2;
-
-    if (type === 'keydown' && e.which === ESC) {
-        recrunClose();
-    } else if (scrollKeyPress) {
-        var key = e.which;
-        sendMsg('keydownscroll', key);
-    } else if (scrollMouseWheel) {
-        sendMsg('mousewheelscroll', {x: e.deltaX, y: e.deltaY});
-    } else if (middleClick) {
-        // not sure how to capture scrolling from middle click, so just capture
-        // and block so background page doesn't move
-    } else {
+    if (e.type !== 'keydown' || e.which !== ESC) {
         return true;
     }
+    recrunClose();
     e.preventDefault();
     e.stopPropagation();
 };
 
 var recrunClose = function() {
-    enableScroll();
+    deregisterEvents();
     $(iframe).fadeOut(200, function() {
         appendTo.removeChild(iframe);
     });
@@ -151,7 +121,7 @@ var cacheDiffbot = null;
 
 var recrunOpen = function(retry) {
     if (!retry) {
-        disableScroll();
+        registerEvents();
         $(iframe).fadeIn(200);
     }
     // could also use url from chrome.runtime's message request.data.url
