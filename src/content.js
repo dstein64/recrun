@@ -86,8 +86,6 @@ var shown = function() {
     return iframe && $(iframe).is(':visible');
 };
 
-var ESC = 27;
-
 var registerEvents = function() {
     $('html').on('keydown', keyHandler);
 };
@@ -101,10 +99,16 @@ var keyHandler = function(e) {
         deregisterEvents();
         return true;
     }
-    if (e.type !== 'keydown' || e.which !== ESC) {
-        return true;
+    if (e.type !== 'keydown') return true;
+    var s = new Set([
+        'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown',
+        'PageUp', 'PageDown', 'Home', 'End', ' '
+    ]);
+    if (e.key === 'Escape') {
+        recrunClose();
+    } else if (s.has(e.key)) {
+        sendMsg('keydownscroll', e.key);
     }
-    recrunClose();
     e.preventDefault();
     e.stopPropagation();
 };

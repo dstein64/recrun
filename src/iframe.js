@@ -21,12 +21,6 @@ var getApiUrl = function(token, url) {
                  + '&url=' + encodeURIComponent(url);
 };
 
-var recrunId = 'recrun';
-
-// append to <html> instead of <body>. Less chance of interfering.
-// creates html that's not valid, but it works...
-var appendTo = document.documentElement;
-
 var getRecrunElementById = function(id) {
     return document.getElementById(id);
 };
@@ -48,14 +42,33 @@ var recrunShowOnly = function(ids) {
     }
 };
 
-var ESC = 27;
-
 $(document).on('keydown', function(e) {
-    if (e.type !== 'keydown')
-        return;
-    if (e.which !== ESC)
-        return;
-    recrunClose();
+    var upSet = new Set(['ArrowUp', 'PageUp', 'Home']);
+    var downSet = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
+    var scrollElt = document.getElementById('scroll');
+    if (e.type !== 'keydown') return;
+    // ignore keys so they don't get sent to the top frame
+    var ignore = false;
+    if (e.key === 'Escape') {
+        recrunClose();
+        ignore = true;
+    } else if (upSet.has(e.key) && scrollElt.scrollTop <= 0) {
+        ignore = true;
+    } else if (downSet.has(e.key)) {
+        var vertical = scrollElt.scrollTop + scrollElt.clientHeight;
+        ignore = vertical >= scrollElt.scrollHeight;
+    } else if (e.key === 'ArrowLeft' && scrollElt.scrollLeft <= 0) {
+        ignore = true;
+    } else if (e.key === 'ArrowRight') {
+        var horizontal = scrollElt.scrollLeft + scrollElt.clientWidth;
+        ignore = horizontal >= scrollElt.scrollWidth;
+    }
+    if (ignore) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+    return true;
 });
 
 // have to pass baseURI for resolving relative links
@@ -534,6 +547,38 @@ document.getElementById('recrun-close').onclick = function() {
     recrunClose();
 };
 
+var keydownScroll = function(key) {
+    var scrollElt = document.getElementById('scroll');
+    var n = 40;
+    var h = scrollElt.clientHeight * 0.85;
+
+    var x = 0;
+    var y = 0;
+
+    if (key === 'ArrowLeft') {
+        x = -1 * n;
+    } else if (key === 'ArrowUp') {
+        y = -1 * n;
+    } else if (key === 'ArrowRight') {
+        x = n;
+    } else if (key === 'ArrowDown') {
+        y = n;
+    } else if (key === ' ' || key === 'PageDown') {
+        y = h;
+    } else if (key === 'PageUp') {
+        y = -1 * h;
+    } else if (key === 'Home') {
+        y = -1 * scrollElt.scrollTop;
+    } else if (key === 'End') {
+        y = scrollElt.scrollHeight
+            - scrollElt.clientHeight
+            - scrollElt.scrollTop;
+    }
+
+    scrollElt.scrollLeft += x;
+    scrollElt.scrollTop += y;
+};
+
 var receiveMessage = function(event) {
     var method = event.data['method'];
     var data = event.data['data'];
@@ -549,6 +594,8 @@ var receiveMessage = function(event) {
         } else if (method === 'updateOptions') {
             // reset saved state, so the next call will re-fetch
             options = data;
+        } else if (method === 'keydownscroll') {
+            keydownScroll(data);
         }
     }
 };
