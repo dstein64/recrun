@@ -47,22 +47,20 @@ $(document).on('keydown', function(e) {
     var downSet = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
     var scrollElt = document.getElementById('scroll');
     if (e.type !== 'keydown') return;
+    var atTop = scrollElt.scrollTop <= 0;
+    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    var atLeft = scrollElt.scrollLeft <= 0;
+    var atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
     // ignore keys so they don't get sent to the top frame
     var ignore = false;
     if (e.key === 'Escape') {
         recrunClose();
         ignore = true;
-    } else if (upSet.has(e.key) && scrollElt.scrollTop <= 0) {
-        ignore = true;
-    } else if (downSet.has(e.key)) {
-        var vertical = scrollElt.scrollTop + scrollElt.clientHeight;
-        ignore = vertical >= scrollElt.scrollHeight;
-    } else if (e.key === 'ArrowLeft' && scrollElt.scrollLeft <= 0) {
-        ignore = true;
-    } else if (e.key === 'ArrowRight') {
-        var horizontal = scrollElt.scrollLeft + scrollElt.clientWidth;
-        ignore = horizontal >= scrollElt.scrollWidth;
     }
+    ignore = ignore || (upSet.has(e.key) && atTop);
+    ignore = ignore || (downSet.has(e.key) && atBottom);
+    ignore = ignore || (e.key === 'ArrowLeft' && atLeft);
+    ignore = ignore || (e.key === 'ArrowRight' && atRight);
     if (ignore) {
         e.preventDefault();
         e.stopPropagation();
