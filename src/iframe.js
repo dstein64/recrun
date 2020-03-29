@@ -1,5 +1,5 @@
 var options = null;
-chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
     options = response;
 });
 
@@ -30,7 +30,7 @@ var recrunShow = function(id) {
 };
 
 var recrunShowOnly = function(ids) {
-    var container = getRecrunElementById("recrun-container");
+    var container = getRecrunElementById('recrun-container');
     var children = container.children;
     for (var i = 0; i < children.length; i++) {
         var child = children[i];
@@ -74,7 +74,7 @@ $(document).on('keydown', function(e) {
 // have to pass baseURI for resolving relative links
 var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
     var parser = new DOMParser();
-    var htmldoc = parser.parseFromString(htmlString, "text/html");
+    var htmldoc = parser.parseFromString(htmlString, 'text/html');
     var doc = rootNode.ownerDocument;
 
     // 'rec' as in 'recursive', not 'rec' as in 'recrun'
@@ -112,52 +112,52 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                         // a relative reference is transformed to its target URI
                         // as follows:
                         //
-                        //    "g:h"           =  "g:h"
-                        //    "g"             =  "http://a/b/c/g"
-                        //    "./g"           =  "http://a/b/c/g"
-                        //    "g/"            =  "http://a/b/c/g/"
-                        //    "/g"            =  "http://a/g"
-                        //    "//g"           =  "http://g"
-                        //*    "?y"            =  "http://a/b/c/d;p?y"
-                        //    "g?y"           =  "http://a/b/c/g?y"
-                        //*    "#s"            =  "http://a/b/c/d;p?q#s"
-                        //    "g#s"           =  "http://a/b/c/g#s"
-                        //    "g?y#s"         =  "http://a/b/c/g?y#s"
-                        //    ";x"            =  "http://a/b/c/;x"
-                        //    "g;x"           =  "http://a/b/c/g;x"
-                        //    "g;x?y#s"       =  "http://a/b/c/g;x?y#s"
-                        //    ""              =  "http://a/b/c/d;p?q"
-                        //    "."             =  "http://a/b/c/"
-                        //    "./"            =  "http://a/b/c/"
-                        //    ".."            =  "http://a/b/"
-                        //    "../"           =  "http://a/b/"
-                        //    "../g"          =  "http://a/b/g"
-                        //    "../.."         =  "http://a/"
-                        //    "../../"        =  "http://a/"
-                        //    "../../g"       =  "http://a/g"
+                        //    'g:h'           =  'g:h'
+                        //    'g'             =  'http://a/b/c/g'
+                        //    './g'           =  'http://a/b/c/g'
+                        //    'g/'            =  'http://a/b/c/g/'
+                        //    '/g'            =  'http://a/g'
+                        //    '//g'           =  'http://g'
+                        //*    '?y'            =  'http://a/b/c/d;p?y'
+                        //    'g?y'           =  'http://a/b/c/g?y'
+                        //*    '#s'            =  'http://a/b/c/d;p?q#s'
+                        //    'g#s'           =  'http://a/b/c/g#s'
+                        //    'g?y#s'         =  'http://a/b/c/g?y#s'
+                        //    ';x'            =  'http://a/b/c/;x'
+                        //    'g;x'           =  'http://a/b/c/g;x'
+                        //    'g;x?y#s'       =  'http://a/b/c/g;x?y#s'
+                        //    ''              =  'http://a/b/c/d;p?q'
+                        //    '.'             =  'http://a/b/c/'
+                        //    './'            =  'http://a/b/c/'
+                        //    '..'            =  'http://a/b/'
+                        //    '../'           =  'http://a/b/'
+                        //    '../g'          =  'http://a/b/g'
+                        //    '../..'         =  'http://a/'
+                        //    '../../'        =  'http://a/'
+                        //    '../../g'       =  'http://a/g'
 
-                        if (attrNameLower === "src" || attrNameLower === "href") {
-                            if (val.indexOf("://") === -1) {
+                        if (attrNameLower === 'src' || attrNameLower === 'href') {
+                            if (val.indexOf('://') === -1) {
                                 var u = new URL(baseURI);
                                 var origin = u.origin;
 
                                 // You confirmed with tests that URLs starting
-                                // with "//" get protocol from baseURI, not from
+                                // with '//' get protocol from baseURI, not from
                                 // protocol of site you're currently on
-                                if (val.startsWith("//")) {
+                                if (val.startsWith('//')) {
                                     val = u.protocol + val;
-                                } else if (val.startsWith("/")) {
+                                } else if (val.startsWith('/')) {
                                     val = origin + val;
-                                } else if (val.startsWith("?")) {
+                                } else if (val.startsWith('?')) {
                                     val = origin + u.pathname + val;
-                                } else if (val.startsWith("#")) {
+                                } else if (val.startsWith('#')) {
                                     val = origin + u.pathname + u.search + val;
-                                } else if (val.indexOf(":") > -1) {
+                                } else if (val.indexOf(':') > -1) {
                                     // do nothing
                                 } else {
                                     var pathname = u.pathname;
                                     var basePath = origin + pathname.substring(
-                                        0, pathname.lastIndexOf("/") + 1);
+                                        0, pathname.lastIndexOf('/') + 1);
                                     val = basePath + val;
                                 }
                             }
@@ -296,13 +296,13 @@ var fillOverlay = function(article, baseURI) {
         // wrap img in <figure> for better layout (so same styling rules can be
         // used for Diffbot and readability)
         var isImg = function(n) {
-            return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === "IMG");
+            return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === 'IMG');
         };
         var imgs = getElements(contentFrag, isImg);
         for (var i = 0; i < imgs.length; i++) {
             var img = imgs[i];
-            if (!descendantOfTag(img, "FIGURE", 10)
-                    && !descendantOfTag(img, "A", 10)) {
+            if (!descendantOfTag(img, 'FIGURE', 10)
+                    && !descendantOfTag(img, 'A', 10)) {
                 var figure = contentFrag.ownerDocument.createElement('figure');
                 wrapNode(figure, img);
             }
@@ -472,7 +472,7 @@ var recrun = function(article, baseURI) {
             } else {
                 var xhr = new XMLHttpRequest();
                 var apiUrl = getApiUrl(options.token, url);
-                xhr.open("GET", apiUrl, true);
+                xhr.open('GET', apiUrl, true);
                 xhr.timeout = TIMEOUT;
                 xhr.onreadystatechange = function() {
                     // 0 The request is not initialized
@@ -601,7 +601,7 @@ var receiveMessage = function(event) {
 };
 // the following is for receiving a message from an iframe, not the extension
 // background
-window.addEventListener("message", receiveMessage, false);
+window.addEventListener('message', receiveMessage, false);
 
 var NOTIFY_WHEN_READY_POLL_DELAY = 20;
 var notifyWhenReady = function() {
