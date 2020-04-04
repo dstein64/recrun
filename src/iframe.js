@@ -69,9 +69,9 @@ $(document).on('keydown', function(e) {
     return true;
 });
 
-// prevent mouse wheel scrolling from propagating when there is no scroll bar.
+// prevent mouse wheel scrolling from propagating when there are no scroll bars
 // (this is a problem on Firefox, but not Chrome)
-window.addEventListener('wheel',function(e) {
+window.addEventListener('wheel', function(e) {
     var scrollElt = document.getElementById('scroll');
     var scrollRect = scrollElt.getBoundingClientRect();
     if (e.pageX < scrollRect.x
@@ -83,11 +83,8 @@ window.addEventListener('wheel',function(e) {
     var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
     var atLeft = scrollElt.scrollLeft <= 0;
     var atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
-    // ignore keys so they don't get sent to the top frame
-    var ignore = false;
-    ignore = ignore || (e.deltaY !== 0 && atTop && atBottom);
-    ignore = ignore || (e.deltaX !== 0 && atLeft && atRight);
-    if (ignore) {
+    // ignore scrolls so they don't get sent to the top frame
+    if (atTop && atBottom && atLeft && atRight) {
         e.preventDefault();
         e.stopPropagation();
         return false;
