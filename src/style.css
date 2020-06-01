@@ -5,6 +5,7 @@
 body {
     padding: 0;
     margin: 0;
+    overflow: hidden;
 }
 
 #overlay {
@@ -31,7 +32,8 @@ body {
     padding-bottom: 6px;
     */
     margin: 0 auto;
-    width: 800px;
+    width: 95%;
+    max-width: 800px;
     /* 2% margin on top, 3% on bottom */
     top: 2%;
     border-radius: 3px;

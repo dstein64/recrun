@@ -51,8 +51,8 @@ setPropertyImp(iframe, 'top', '0px');
 setPropertyImp(iframe, 'left', '0px');
 setPropertyImp(iframe, 'padding', '0px');
 setPropertyImp(iframe, 'margin', '0px');
-setPropertyImp(iframe, 'width', '100vw');
-setPropertyImp(iframe, 'height', '100vh');
+setPropertyImp(iframe, 'width', '100%');
+setPropertyImp(iframe, 'height', '100%');
 
 // 2147483647 is the max. In testing, it seems like a tie goes to the most
 // recently added element. So you changed run_at from document_start to
