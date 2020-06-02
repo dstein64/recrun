@@ -54,6 +54,23 @@ setPropertyImp(iframe, 'margin', '0px');
 setPropertyImp(iframe, 'width', '100%');
 setPropertyImp(iframe, 'height', '100%');
 
+// On mobile, account for viewport scaling on pages that aren't mobile-friendly
+// (e.g., pages without a <meta name="viewport" ...> tag.
+var userAgent = navigator.userAgent.toLowerCase();
+if (userAgent.indexOf('android') > -1
+    || userAgent.indexOf('iphone') > -1
+    || userAgent.indexOf('ipad') > -1
+    || userAgent.indexOf('ipod') > -1) {
+    if (document.documentElement.clientWidth > window.outerWidth) {
+        var percent = 100 * window.outerWidth / document.documentElement.clientWidth;
+        var scale = document.documentElement.clientWidth / window.outerWidth;
+        setPropertyImp(iframe, 'width', percent + '%');
+        setPropertyImp(iframe, 'height', percent + '%');
+        setPropertyImp(iframe, 'transform', 'scale(' + scale + ')');
+        setPropertyImp(iframe, 'transform-origin', 'top left');
+    }
+}
+
 // 2147483647 is the max. In testing, it seems like a tie goes to the most
 // recently added element. So you changed run_at from document_start to
 // document_idle, so that recrun z-index takes precedence
