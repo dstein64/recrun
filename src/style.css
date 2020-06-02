@@ -27,10 +27,6 @@ body {
     position: relative;
     height: 95%;
     padding: 0;
-    /*
-    padding-top: 6px;
-    padding-bottom: 6px;
-    */
     margin: 0 auto;
     width: 95%;
     max-width: 800px;
@@ -182,7 +178,6 @@ pre, code {
     overflow-x: auto;
     word-wrap: normal;
     padding: 3px;
-    /*background-color: #fafafa;*/
 }
 
 #recrun-apiresponse, #recrun-error {
