@@ -120,6 +120,25 @@ document.getElementById('defaults').addEventListener('click', function() {
     }
 })();
 
+// Decouple labels and checkboxes on mobile, so that touching the label will only
+// show the help text, without toggling the checkbox. Check user agent string,
+// since as of 2020/06/02, I couldn't find a reliable way to check whether a mouse
+// is the primary input.
+(function() {
+    var userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.indexOf('android') === -1
+        && userAgent.indexOf('iphone') === -1
+        && userAgent.indexOf('ipad') === -1
+        && userAgent.indexOf('ipod') === -1) {
+        return;
+    }
+    var labels = document.getElementsByClassName('mobile-remove-for');
+    for (var i = 0; i < labels.length; i++) {
+        var label = labels[i];
+        label.removeAttribute('for');
+    }
+})();
+
 document.getElementById('revert').addEventListener('click', function() {
     loadOptions(initOpts);
     statusMessage('Options Reverted', 1200);

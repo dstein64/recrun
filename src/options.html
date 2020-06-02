@@ -2,16 +2,6 @@
 <head>
 <title>recrun Extension Options</title>
 <style>
-#container {
-    width: 500px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-#checkboxes {
-    line-height: 200%;
-}
-
 #diffbot-settings.disabled, #diffbot-settings.disabled * {
     color: rgb(204, 204, 204);
 }
@@ -60,17 +50,17 @@ a.tooltip span {
 
 <body>
 
-<div id="container">
+<div>
 <h3><em>recrun</em> v<span id="version"></span></h3>
 <h2>Options</h2>
 <input type="checkbox" id="media-checkbox">
-<label for="media-checkbox">
+<label for="media-checkbox" class="mobile-remove-for">
     <a class="tooltip">Media<span>When enabled, media (e.g., img, video) will be
     included. Media is retrieved from a remote resource.</span></a>
 </label>
 <br><br>
 <input class="checkboxes" type="checkbox" id="useDiffbot-checkbox">
-<label for="useDiffbot-checkbox">
+<label for="useDiffbot-checkbox" class="mobile-remove-for">
     <a class="tooltip">Use Diffbot<span>When enabled, recrun uses the Diffbot
     API.<br>Visit diffbot.com to sign up for a token.</span></a>
 </label>
@@ -79,7 +69,7 @@ a.tooltip span {
     Diffbot Token: <input id="token" type="text" name="token" size="35">
     <br><br>
     <input class="checkboxes" type="checkbox" id="diffbotHtml-checkbox">
-    <label for="diffbotHtml-checkbox">
+    <label for="diffbotHtml-checkbox" class="mobile-remove-for">
         <a class="tooltip">Diffbot <i>html</i><span>When enabled, content is
         from Diffbot's <i>html</i> field.</span></a>
     </label>
