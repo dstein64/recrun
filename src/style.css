@@ -1,7 +1,3 @@
-#scroll {
-    overscroll-behavior: none;
-}
-
 body {
     padding: 0;
     margin: 0;
@@ -38,19 +34,26 @@ body {
     overflow: hidden;
 }
 
+#scroll {
+    overscroll-behavior: none;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
 #recrun-container {
     padding-top: 10px;
     padding-bottom: 10px;
 }
 
 #recrun-close {
-    font: bold 20px sans-serif;
-    padding-left: 8px;
-    padding-top: 6px;
-    margin-top: 0;
+    font-size: 30px;
+    line-height: 15px;
+    font-weight: bold;
+    font-family: monospace;
+    margin: 0;
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 4px;
+    top: 5px;
     color: gray;
     cursor: pointer;
     display: inline-block;
