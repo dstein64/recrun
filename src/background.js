@@ -59,7 +59,6 @@ var defaultOptions = function() {
 
 var inject = function(callback=function() {}) {
     var scripts = [
-        'src/lib/jquery.js',
         'src/lib/readabilitySAX/readabilitySAX.js',
         'src/content.js'
     ];
