@@ -23,7 +23,7 @@ var getRecrunElementById = function(id) {
 };
 
 var recrunShow = function(id) {
-    getRecrunElementById(id).style.display = 'initial';
+    getRecrunElementById(id).style.display = null;
 };
 
 var recrunShowOnly = function(ids) {
@@ -365,78 +365,12 @@ var fillOverlay = function(article, baseURI) {
                 contentFrag.appendChild(p);
             }
         }
-
-        // next add discussion
-
-        // TODO: indent comments based on parent/child relationships
-
-        var commentsFrag = document.createDocumentFragment();
-        // comments currently disabled
-        if (false && options.comments && ('discussion' in article)) {
-            var discussion = article['discussion'];
-            if ('posts' in discussion) {
-                var posts = discussion['posts'];
-                if (posts.length > 0) {
-                    var commentsHeader = document.createElement('h2');
-                    commentsHeader.appendChild(
-                        document.createTextNode('Comments'));
-                    commentsFrag.appendChild(commentsHeader);
-                    for (var i = 0; i < posts.length; i++) {
-                        var post = posts[i];
-                        var postDiv = document.createElement('div');
-                        postDiv.classList.add('post');
-
-                        if ('author' in post) {
-                            var postAuthorDiv = document.createElement('div');
-                            postAuthorDiv.classList.add('postAuthor');
-                            postAuthorDiv.appendChild(
-                                document.createTextNode(post['author']));
-                            postDiv.appendChild(postAuthorDiv);
-                        }
-
-                        if ('date' in post) {
-                            var postDateDiv = document.createElement('div');
-                            postDateDiv.classList.add('postDate');
-                            postDateDiv.appendChild(
-                                document.createTextNode(post['date']));
-                            postDiv.appendChild(postDateDiv);
-                        }
-
-                        var postContentDiv = document.createElement('div');
-                        postContentDiv.classList.add('postContent');
-                        if (options.diffbotHtml) {
-                            if ('html' in post) {
-                                var htmlPostString = post['html'];
-                                sanitize(htmlPostString, postContentDiv);
-                            }
-                        } else if ('text' in post) {
-                            var postP = document.createElement('p');
-                            postP.appendChild(
-                                document.createTextNode(post['text']));
-                            postContentDiv.appendChild(postP);
-                        }
-
-                        if (!('parentId' in post) && i < posts.length-1) {
-                            var postSep = document.createElement('hr');
-                            postContentDiv.appendChild(postSep);
-                        }
-
-                        postDiv.appendChild(postContentDiv);
-                        commentsFrag.appendChild(postDiv);
-                    }
-                }
-            }
-        }
     }
 
     var e = getRecrunElementById('recrun-html');
 
     if (contentFrag) {
         e.appendChild(contentFrag);
-    }
-
-    if (commentsFrag) {
-        e.appendChild(commentsFrag);
     }
 };
 

@@ -184,7 +184,6 @@ pre, code {
 }
 
 #recrun-apiresponse, #recrun-error {
-    display: none;
     font-size: 20px;
     font-family: arial, helvetica, sans-serif;
     text-align: initial;

@@ -142,7 +142,7 @@ var cacheDiffbot = null;
 var recrunOpen = function(retry) {
     if (!retry) {
         registerEvents();
-        iframe.style.display = 'initial';
+        iframe.style.display = null;
     }
     // could also use url from chrome.runtime's message request.data.url
     var data = Object(null);
