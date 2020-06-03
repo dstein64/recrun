@@ -1,7 +1,4 @@
 var options = null;
-chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
-    options = response;
-});
 
 // url of last recrun'd page
 // Subsequently updated by the recrun message listener
@@ -26,23 +23,23 @@ var getRecrunElementById = function(id) {
 };
 
 var recrunShow = function(id) {
-    $(getRecrunElementById(id)).show();
+    getRecrunElementById(id).style.display = 'initial';
 };
 
 var recrunShowOnly = function(ids) {
-    var container = getRecrunElementById('recrun-container');
-    var children = container.children;
-    for (var i = 0; i < children.length; i++) {
+    let container = getRecrunElementById('recrun-container');
+    let children = container.children;
+    for (let i = 0; i < children.length; i++) {
         var child = children[i];
-        $(child).hide();
+        child.style.display = 'none';
     }
-    for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
+    for (let i = 0; i < ids.length; i++) {
+        let id = ids[i];
         recrunShow(id);
     }
 };
 
-$(document).on('keydown', function(e) {
+document.addEventListener('keydown', function(e) {
     var upSet = new Set(['ArrowUp', 'PageUp', 'Home']);
     var downSet = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
     var scrollElt = document.getElementById('scroll');
@@ -452,7 +449,10 @@ var reset = function() {
     ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
     for (var i = 0; i < ids.length; i++) {
         var cur = ids[i];
-        $('#' + cur).empty();
+        var element = document.getElementById(cur);
+        while (element.firstChild) {
+            element.removeChild(element.lastChild);
+        }
     }
 };
 
@@ -624,13 +624,9 @@ var receiveMessage = function(event) {
 // background
 window.addEventListener('message', receiveMessage, false);
 
-var NOTIFY_WHEN_READY_POLL_DELAY = 20;
-var notifyWhenReady = function() {
-    var ready = options != null;
-    if (ready) {
+document.addEventListener('DOMContentLoaded', function(event) {
+    chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
+        options = response;
         sendMsg('ready', null);
-    } else {
-        setTimeout(notifyWhenReady, NOTIFY_WHEN_READY_POLL_DELAY);
-    }
-};
-notifyWhenReady();
+    });
+});

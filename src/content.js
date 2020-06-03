@@ -53,6 +53,7 @@ setPropertyImp(iframe, 'padding', '0px');
 setPropertyImp(iframe, 'margin', '0px');
 setPropertyImp(iframe, 'width', '100%');
 setPropertyImp(iframe, 'height', '100%');
+setPropertyImp(iframe, 'display', 'none');
 
 // On mobile, account for viewport scaling on pages that aren't mobile-friendly
 // (e.g., pages without a <meta name="viewport" ...> tag.
@@ -84,7 +85,7 @@ iframe.setAttribute('frameBorder', '0px');
 // is cached, within the iframe, so don't remove
 var appendTo = document.documentElement;
 
-$(iframe).hide();
+iframe.style.display = 'none';
 
 var sendMsg = function(method, data) {
     iframe.contentWindow.postMessage(
@@ -100,15 +101,15 @@ var exists = function() {
 };
 
 var shown = function() {
-    return iframe && $(iframe).is(':visible');
+    return iframe && iframe.style.display !== 'none';
 };
 
 var registerEvents = function() {
-    $('html').on('keydown', keyHandler);
+    document.addEventListener('keydown', keyHandler);
 };
 
 var deregisterEvents = function() {
-    $('html').off('keydown', keyHandler);
+    document.removeEventListener('keydown', keyHandler);
 };
 
 var keyHandler = function(e) {
@@ -132,9 +133,7 @@ var keyHandler = function(e) {
 
 var recrunClose = function() {
     deregisterEvents();
-    $(iframe).fadeOut(200, function() {
-        appendTo.removeChild(iframe);
-    });
+    iframe.style.display = 'none';
 };
 
 // store last Diffbot response here
@@ -143,7 +142,7 @@ var cacheDiffbot = null;
 var recrunOpen = function(retry) {
     if (!retry) {
         registerEvents();
-        $(iframe).fadeIn(200);
+        iframe.style.display = 'initial';
     }
     // could also use url from chrome.runtime's message request.data.url
     var data = Object(null);
@@ -167,7 +166,6 @@ var recrunOpen = function(retry) {
     }
 
     data['baseURI'] = document.baseURI;
-
     sendMsg('recrun', data);
 };
 
