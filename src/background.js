@@ -57,11 +57,7 @@ var defaultOptions = function() {
     localStorage['options'] = JSON.stringify(opts);
 })();
 
-var inject = function(callback=function() {}) {
-    var scripts = [
-        'src/lib/readabilitySAX/readabilitySAX.js',
-        'src/content.js'
-    ];
+var inject = function(callback=function() {}, scripts=[]) {
     let fn = callback;
     for (var i = scripts.length - 1; i >= 0; --i) {
         let script = scripts[i];
@@ -110,13 +106,16 @@ chrome.browserAction.onClicked.addListener(function(tab) {
                 {method: 'ping', data: {url: tab.url}},
                 {},
                 function(resp) {
-                    // On Firefox, in some cases just checking for lastError is not
-                    // sufficient.
-                    if (chrome.runtime.lastError || !resp) {
-                        inject(recrun);
-                    } else {
-                        recrun();
+                    let scripts = [];
+                    // Always inject readabilitySAX, as it seems to get clobbered in some cases
+                    // (e.g., when toggling Firefox's reader view).
+                    scripts.push('src/lib/readabilitySAX/readabilitySAX.js');
+                    // Inject content script if it hasn't been injected yet.
+                    // On Firefox, in some cases just checking for lastError is not sufficient.
+                    if (chrome.runtime.lastError || !resp || !resp.success) {
+                        scripts.push('src/content.js');
                     }
+                    inject(recrun, scripts);
                 });
         });
 });
