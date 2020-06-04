@@ -36,8 +36,8 @@ body {
 
 #scroll {
     overscroll-behavior: none;
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 28px;
+    padding-right: 28px;
 }
 
 #recrun-container {
@@ -46,19 +46,27 @@ body {
 }
 
 #recrun-close {
-    font-size: 30px;
-    line-height: 15px;
-    font-weight: bold;
-    font-family: monospace;
-    margin: 0;
     position: absolute;
-    left: 4px;
-    top: 5px;
+    /*
+     *  The following effectively results in padding of 4px (12 - 8 = 4),
+     *  with an extra 8px of clickable area.
+     */
+    padding: 12px;
+    margin: -8px;
+    width: 18px;
+    height: 18px;
     color: gray;
     cursor: pointer;
-    display: inline-block;
-    text-align: center;
-    text-decoration: none;
+    z-index: 2147483647;
+}
+
+#recrun-close line {
+    stroke: gray;
+    stroke-width: 3;
+}
+
+#recrun-close:hover line {
+    stroke: black;
 }
 
 div#recrun-container {

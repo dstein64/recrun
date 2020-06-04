@@ -1,14 +1,18 @@
-<html>
+<html lang="en">
 <head>
+    <title>recrun</title>
     <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
   <div id='overlay'></div><!-- #overlay -->
   <div id='recrun'>
-    <span id="recrun-close">&times;</span>
+    <svg id="recrun-close" viewBox="0 0 12 12">
+      <line x1="1" y1="11" x2="11" y2="1" />
+      <line x1="1" y1="1" x2="11" y2="11" />
+    </svg>
     <div id="scroll" style="overflow: auto; height: 100%;">
         <div id="recrun-container">
-            <img id="recrun-loader" src="loader.gif"></img>
+            <img id="recrun-loader" src="loader.gif" />
             <div id="recrun-apiresponse">
                 <div id="recrun-title"></div>
                 <div id="recrun-author"></div>
