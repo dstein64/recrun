@@ -10,7 +10,6 @@ to this icon in the recrun screenshot).
 
 Optionally, recrun can use the [Diffbot Article API](http://www.diffbot.com/products/automatic/article/) to extract relevant content.
 A Diffbot token is required for this, and must be entered in recrun's options.
-A free token can be obtained by signing up at https://www.diffbot.com/plans/free.
 
 The extension is available for Chrome at
 https://chrome.google.com/webstore/detail/recrun/ocikmakgbemmhogikcbcbkebeephjcno.
