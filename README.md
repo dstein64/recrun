@@ -8,8 +8,11 @@ To use recrun, install the extension, navigate to an article web page,
 and click the eyeglasses icon in the browser toolbar (there is an arrow pointing
 to this icon in the recrun screenshot).
 
-Optionally, recrun can use the [Diffbot Article API](http://www.diffbot.com/products/automatic/article/) to extract relevant content.
-A Diffbot token is required for this, and must be entered in recrun's options.
+Optionally, recrun can use the [Diffbot Article API][diffbot_article_api] to extract
+relevant content. A Diffbot token is required for this, and must be entered in recrun's
+options.
+
+[diffbot_article_api]: http://www.diffbot.com/products/automatic/article/
 
 The extension is available for Chrome at
 https://chrome.google.com/webstore/detail/recrun/ocikmakgbemmhogikcbcbkebeephjcno.
