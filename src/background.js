@@ -1,3 +1,5 @@
+const IS_FIREFOX = chrome.runtime.getURL('').startsWith('moz-extension://');
+
 // if already using Diffbot, make sure new option, useDiffbot, set to true
 // can eventually remove this
 (function() {
@@ -74,11 +76,13 @@ var inject = function(callback=function() {}, scripts=[]) {
 chrome.browserAction.onClicked.addListener(function(tab) {
     var showError = function() {
         var errorMessage = 'recrun couldn\'t run on this page.';
-        // WARN: This doesn't work on Firefox.
-        // "alert() is not supported in background windows;
-        //  please use console.log instead. background.js:88:14"
-        console.error(errorMessage);
-        alert(errorMessage);
+        // alert() doesn't work from Firefox background pages. A try/catch block is
+        // not sufficient to prevent the "Browser Console" window that pops up with
+        // the following message when using alert():
+        // > "The Web Console logging API (console.log, console.info, console.warn,
+        // > console.error) has been disabled by a script on this page."
+        if (!IS_FIREFOX)
+            alert(errorMessage);
     };
     var recrun = function() {
         chrome.tabs.sendMessage(
@@ -92,8 +96,8 @@ chrome.browserAction.onClicked.addListener(function(tab) {
             });
     };
     // First check if the current page is supported by trying to inject no-op code.
-    // (e.g., https://chrome.google.com/webstore, chrome://extensions/, and other pages
-    // do not support extensions).
+    // (e.g., https://chrome.google.com/webstore, https://addons.mozilla.org/en-US/firefox/,
+    // chrome://extensions/, and other pages do not support extensions).
     chrome.tabs.executeScript(
         {code: '(function(){})();'},
         function() {
