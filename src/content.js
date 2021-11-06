@@ -44,7 +44,7 @@ var iframe = document.createElement('iframe');
 var src = 'src/iframe.html';
 var hash = '#' + encodeURIComponent(location.href);
 iframe.id = createUniqueId();
-iframe.src = chrome.extension.getURL(src + hash);
+iframe.src = chrome.runtime.getURL(src + hash);
 iframe.setAttribute('frameBorder', '0');
 setPropertyImp(iframe, 'display', 'none');
 
