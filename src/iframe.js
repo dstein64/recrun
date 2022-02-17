@@ -345,8 +345,9 @@ const fillOverlay = function(article, baseURI) {
 
             const text = article['text'];
             const paragraphs = text.split(/\n/g);
-            for (const p of paragraphs) {
-                p.appendChild(document.createTextNode(paragraphs[i]));
+            for (const paragraph of paragraphs) {
+                const p = document.createElement('p');
+                p.appendChild(document.createTextNode(paragraph));
                 contentFrag.appendChild(p);
             }
         }
