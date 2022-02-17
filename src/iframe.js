@@ -1,36 +1,36 @@
-var options = null;
+let options = null;
 
 // url of last recrun'd page
 // Subsequently updated by the recrun message listener
-var lastUrl = decodeURIComponent(location.hash.slice(1));
+let lastUrl = decodeURIComponent(location.hash.slice(1));
 
 // send message to parent
-var sendMsg = function(method, data) {
+const sendMsg = function(method, data) {
     // targetOrigin matches on scheme, hostname, and port, so even if there
     // has been a change to the URL (hash change or something else within the
     // same domain, this targetOrigin will work.
     parent.postMessage({method: method, data: data}, lastUrl);
 };
 
-var getApiUrl = function(token, url) {
+const getApiUrl = function(token, url) {
     return 'https://api.diffbot.com/v3/article?html'
                  + '&token=' + token
                  + '&url=' + encodeURIComponent(url);
 };
 
-var getRecrunElementById = function(id) {
+const getRecrunElementById = function(id) {
     return document.getElementById(id);
 };
 
-var recrunShow = function(id) {
+const recrunShow = function(id) {
     getRecrunElementById(id).style.display = null;
 };
 
-var recrunShowOnly = function(ids) {
+const recrunShowOnly = function(ids) {
     let container = getRecrunElementById('recrun-container');
     let children = container.children;
     for (let i = 0; i < children.length; i++) {
-        var child = children[i];
+        const child = children[i];
         child.style.display = 'none';
     }
     for (let i = 0; i < ids.length; i++) {
@@ -40,16 +40,16 @@ var recrunShowOnly = function(ids) {
 };
 
 document.addEventListener('keydown', function(e) {
-    var upSet = new Set(['ArrowUp', 'PageUp', 'Home']);
-    var downSet = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
-    var scrollElt = document.getElementById('scroll');
+    const upSet = new Set(['ArrowUp', 'PageUp', 'Home']);
+    const downSet = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
+    const scrollElt = document.getElementById('scroll');
     if (e.type !== 'keydown') return;
-    var atTop = scrollElt.scrollTop <= 0;
-    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
-    var atLeft = scrollElt.scrollLeft <= 0;
-    var atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
+    const atTop = scrollElt.scrollTop <= 0;
+    const atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    const atLeft = scrollElt.scrollLeft <= 0;
+    const atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
     // ignore keys so they don't get sent to the top frame
-    var ignore = false;
+    let ignore = false;
     if (e.key === 'Escape') {
         recrunClose();
         ignore = true;
@@ -69,17 +69,17 @@ document.addEventListener('keydown', function(e) {
 // prevent mouse wheel scrolling from propagating when there are no scroll bars
 // (this is a problem on Firefox, but not Chrome)
 window.addEventListener('wheel', function(e) {
-    var scrollElt = document.getElementById('scroll');
-    var scrollRect = scrollElt.getBoundingClientRect();
+    const scrollElt = document.getElementById('scroll');
+    const scrollRect = scrollElt.getBoundingClientRect();
     if (e.pageX < scrollRect.x
             || e.pageX > scrollRect.x + scrollRect.width
             || e.pageY < scrollRect.y
             || e.pageY > scrollRect.y + scrollRect.height)
         return true;
-    var atTop = scrollElt.scrollTop <= 0;
-    var atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
-    var atLeft = scrollElt.scrollLeft <= 0;
-    var atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
+    const atTop = scrollElt.scrollTop <= 0;
+    const atBottom = scrollElt.scrollTop + scrollElt.clientHeight >= scrollElt.scrollHeight;
+    const atLeft = scrollElt.scrollLeft <= 0;
+    const atRight = scrollElt.scrollLeft + scrollElt.clientWidth >= scrollElt.scrollWidth;
     // ignore scrolls so they don't get sent to the top frame
     if (atTop && atBottom && atLeft && atRight) {
         e.preventDefault();
@@ -90,33 +90,33 @@ window.addEventListener('wheel', function(e) {
 }, {passive: false});
 
 // have to pass baseURI for resolving relative links
-var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
-    var parser = new DOMParser();
-    var htmldoc = parser.parseFromString(htmlString, 'text/html');
-    var doc = rootNode.ownerDocument;
+const sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI) {
+    const parser = new DOMParser();
+    const htmldoc = parser.parseFromString(htmlString, 'text/html');
+    const doc = rootNode.ownerDocument;
 
     // 'rec' as in 'recursive', not 'rec' as in 'recrun'
-    var rec = function(n, recrunNode) {
-        var type = n.nodeType;
+    const rec = function(n, recrunNode) {
+        const type = n.nodeType;
         if (type === Node.TEXT_NODE) {
-            var text = n.textContent;
+            const text = n.textContent;
             recrunNode.appendChild(doc.createTextNode(text));
         } else if (type === Node.ELEMENT_NODE) {
-            var tag = n.tagName;
-            var tagLower = tag.toLowerCase();
+            const tag = n.tagName;
+            const tagLower = tag.toLowerCase();
 
-            var nextRecrunNode = recrunNode;
+            let nextRecrunNode = recrunNode;
 
             if (allowedTags.has(tagLower)) {
-                var newElement = doc.createElement(tag);
+                const newElement = doc.createElement(tag);
 
-                var attrs = n.attributes;
-                for (var i = 0; i < attrs.length; i++) {
-                    var attr = attrs[i];
-                    var attrNameLower = attr.name.toLowerCase();
+                const attrs = n.attributes;
+                for (let i = 0; i < attrs.length; i++) {
+                    const attr = attrs[i];
+                    const attrNameLower = attr.name.toLowerCase();
                     if (allowedAttrs.has(tagLower)
                           && allowedAttrs.get(tagLower).has(attrNameLower)) {
-                        var val = attr.value;
+                        let val = attr.value;
 
                         // resolve paths
 
@@ -156,8 +156,8 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
 
                         if (attrNameLower === 'src' || attrNameLower === 'href') {
                             if (val.indexOf('://') === -1) {
-                                var u = new URL(baseURI);
-                                var origin = u.origin;
+                                const u = new URL(baseURI);
+                                const origin = u.origin;
 
                                 // You confirmed with tests that URLs starting
                                 // with '//' get protocol from baseURI, not from
@@ -173,8 +173,8 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                                 } else if (val.indexOf(':') > -1) {
                                     // do nothing
                                 } else {
-                                    var pathname = u.pathname;
-                                    var basePath = origin + pathname.substring(
+                                    const pathname = u.pathname;
+                                    const basePath = origin + pathname.substring(
                                         0, pathname.lastIndexOf('/') + 1);
                                     val = basePath + val;
                                 }
@@ -198,27 +198,27 @@ var sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseURI
                 nextRecrunNode = newElement;
             }
 
-            var _children = n.childNodes;
-            for (var i = 0; i < _children.length; i++) {
-                var _child = _children[i];
+            const _children = n.childNodes;
+            for (let i = 0; i < _children.length; i++) {
+                const _child = _children[i];
                 rec(_child, nextRecrunNode);
             }
 
         }
     };
-    var children = htmldoc.body.childNodes;
-    for (var i = 0; i < children.length; i++) {
-        var child = children[i];
+    const children = htmldoc.body.childNodes;
+    for (let i = 0; i < children.length; i++) {
+        const child = children[i];
         rec(child, rootNode);
     }
 };
 
-var descendantOfTag = function(element, tagName, depth) {
+const descendantOfTag = function(element, tagName, depth) {
     // -1 for infinite. not safe.
     depth = typeof depth !== 'undefined' ? depth : -1;
     tagName = tagName.toUpperCase();
-    var cur = element;
-    var counter = 0;
+    let cur = element;
+    let counter = 0;
     while (cur) {
         if (cur === null) { // at root
             return false;
@@ -236,8 +236,8 @@ var descendantOfTag = function(element, tagName, depth) {
 
 // returns false on error (a node with no parent)
 // returns outer on success
-var wrapNode = function(outer, inner) {
-    var parent = inner.parentElement;
+const wrapNode = function(outer, inner) {
+    const parent = inner.parentElement;
     if (parent) {
         inner.parentElement.replaceChild(outer, inner);
         outer.appendChild(inner);
@@ -248,15 +248,15 @@ var wrapNode = function(outer, inner) {
 };
 
 // given some document fragment, return a list of nodes for which fn returns true
-var getElements = function(frag, fn) {
-    var l = [];
-    var rec = function(n) {
+const getElements = function(frag, fn) {
+    const l = [];
+    const rec = function(n) {
         if (fn(n)) {
             l.push(n);
         }
-        var children = n.children;
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
+        const children = n.children;
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
             rec(child);
         }
     };
@@ -265,24 +265,24 @@ var getElements = function(frag, fn) {
 };
 
 // an aricle object has title, author, date, etc.
-var fillOverlay = function(article, baseURI) {
-    var fields = ['title', 'author', 'date'];
-    for (var i = 0; i < fields.length; i++) {
-        var field = fields[i];
-        var e = getRecrunElementById('recrun-' + field);
+const fillOverlay = function(article, baseURI) {
+    const fields = ['title', 'author', 'date'];
+    for (let i = 0; i < fields.length; i++) {
+        const field = fields[i];
+        const e = getRecrunElementById('recrun-' + field);
         if (field in article && e) {
             e.appendChild(document.createTextNode(article[field]));
         }
     }
 
-    var contentFrag = document.createDocumentFragment();
+    const contentFrag = document.createDocumentFragment();
 
     // the following allowed tags and attributes is specific to Diffbot, but will
     // be used for non-diffbot recrun'ing as well
 
     // from https://diffbot.com/dev/docs/article/html/
     // block elements
-    var allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code',
+    let allowedTagsL = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'blockquote', 'code',
                         'pre', 'ul', 'ol', 'li', 'table', 'tbody', 'tr', 'td',
                         'dl', 'dt', 'dd'];
     // inline elements (following specs, although I usually treat <br> as block)
@@ -293,8 +293,8 @@ var fillOverlay = function(article, baseURI) {
                                             'source', 'figcaption', 'iframe',
                                             'embed', 'object']);
     }
-    var allowedTags = new Set(allowedTagsL);
-    var allowedAttrs = new Map();
+    const allowedTags = new Set(allowedTagsL);
+    const allowedAttrs = new Map();
     allowedAttrs.set('td', new Set(['valign', 'colspan']));
     allowedAttrs.set('a', new Set(['href']));
     allowedAttrs.set('img', new Set(['src', 'alt']));
@@ -305,23 +305,23 @@ var fillOverlay = function(article, baseURI) {
     allowedAttrs.set('embed', new Set(['src', 'type']));
     allowedAttrs.set('object', new Set(['src', 'type']));
 
-    var useDiffbot = options.useDiffbot;
+    const useDiffbot = options.useDiffbot;
 
     if (!useDiffbot) {
         allowedTags.add('div');
-        var htmlString = article['html'];
+        const htmlString = article['html'];
         sanitize(htmlString, contentFrag, allowedTags, allowedAttrs, baseURI);
         // wrap img in <figure> for better layout (so same styling rules can be
         // used for Diffbot and readability)
-        var isImg = function(n) {
+        const isImg = function(n) {
             return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === 'IMG');
         };
-        var imgs = getElements(contentFrag, isImg);
-        for (var i = 0; i < imgs.length; i++) {
-            var img = imgs[i];
+        const imgs = getElements(contentFrag, isImg);
+        for (let i = 0; i < imgs.length; i++) {
+            const img = imgs[i];
             if (!descendantOfTag(img, 'FIGURE', 10)
                     && !descendantOfTag(img, 'A', 10)) {
-                var figure = contentFrag.ownerDocument.createElement('figure');
+                const figure = contentFrag.ownerDocument.createElement('figure');
                 wrapNode(figure, img);
             }
         }
@@ -329,7 +329,7 @@ var fillOverlay = function(article, baseURI) {
         // first add primary content
         if (options.diffbotHtml && ('html' in article)) {
             // create recrun content from Diffbot's html field
-            var htmlString = article['html'];
+            const htmlString = article['html'];
 
             // can inject with innerHtml, and then clean up
             // I prefer this approach
@@ -341,15 +341,15 @@ var fillOverlay = function(article, baseURI) {
             // create recrun content from Diffbot's text field
             // starting with one primary
             if (options.media && 'images' in article) {
-                var images = article['images'];
-                for (var i = 0; i < images.length; i++) {
-                    var image = images[i];
+                const images = article['images'];
+                for (let i = 0; i < images.length; i++) {
+                    const image = images[i];
                     if ('primary' in image
                             && image['primary'] === true
                             && 'url' in image
                             && (image['url'].startsWith('http://')
                                     || image['url'].startsWith('https://'))) {
-                        var img = document.createElement('img');
+                        const img = document.createElement('img');
                         img.src = image['url'];
                         contentFrag.appendChild(img);
                         break;
@@ -357,54 +357,54 @@ var fillOverlay = function(article, baseURI) {
                 }
             }
 
-            var text = article['text'];
-            var paragraphs = text.split(/\n/g);
-            for (var i = 0; i < paragraphs.length; i++) {
-                var p = document.createElement('p');
+            const text = article['text'];
+            const paragraphs = text.split(/\n/g);
+            for (let i = 0; i < paragraphs.length; i++) {
+                const p = document.createElement('p');
                 p.appendChild(document.createTextNode(paragraphs[i]));
                 contentFrag.appendChild(p);
             }
         }
     }
 
-    var e = getRecrunElementById('recrun-html');
+    const e = getRecrunElementById('recrun-html');
 
     if (contentFrag) {
         e.appendChild(contentFrag);
     }
 };
 
-var recrunClose = function() {
+const recrunClose = function() {
     sendMsg('close', null);
 };
 
 // reset recrun content to default
-var reset = function() {
-    ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
-    for (var i = 0; i < ids.length; i++) {
-        var cur = ids[i];
-        var element = document.getElementById(cur);
+const reset = function() {
+    const ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
+    for (let i = 0; i < ids.length; i++) {
+        const cur = ids[i];
+        const element = document.getElementById(cur);
         while (element.firstChild) {
             element.removeChild(element.lastChild);
         }
     }
 };
 
-var recrun = function(article, baseURI) {
+const recrun = function(article, baseURI) {
     reset();
 
-    var showDiffbot = function(article) {
+    const showDiffbot = function(article) {
         return function() {
             fillOverlay(article, baseURI);
             recrunShowOnly(['recrun-apiresponse']);
         }
     };
 
-    var showError = function() {
+    const showError = function() {
         recrunShowOnly(['recrun-error']);
     };
-    var callback = null;
-    var url = lastUrl;
+    let callback;
+    const url = lastUrl;
 
     // use cached response
     // also make sure cached response corresponds to current url (since url
@@ -416,17 +416,17 @@ var recrun = function(article, baseURI) {
         }
     } else {
         callback = function() {
-            var TIMEOUT = 40000;
+            const TIMEOUT = 40000;
             recrunShowOnly(['recrun-loader']);
 
             // no need to trim. options page does that.
-            var validToken = ((typeof options.token) === 'string')
+            const validToken = ((typeof options.token) === 'string')
                              && options.token.length > 0;
             if (!validToken) {
                 showError(); // will show an error
             } else {
-                var xhr = new XMLHttpRequest();
-                var apiUrl = getApiUrl(options.token, url);
+                const xhr = new XMLHttpRequest();
+                const apiUrl = getApiUrl(options.token, url);
                 xhr.open('GET', apiUrl, true);
                 xhr.timeout = TIMEOUT;
                 xhr.onreadystatechange = function() {
@@ -436,24 +436,24 @@ var recrun = function(article, baseURI) {
                     // 3 ... is in process
                     // 4 ... is complete
                     if (xhr.readyState === 4) {
-                        var status = xhr.status;
-                        var showFn = showError;
+                        const status = xhr.status;
+                        let showFn = showError;
                         if (status === 200) {
-                            var _resp = JSON.parse(xhr.responseText);
+                            const _resp = JSON.parse(xhr.responseText);
                             if (!('error' in _resp)
                                     && 'objects' in _resp
                                     && _resp['objects'].length > 0) {
-                                var articles = [];
-                                var len = _resp['objects'].length;
-                                for (var i = 0; i < len; i++) {
-                                    var object = _resp['objects'][i];
+                                const articles = [];
+                                const len = _resp['objects'].length;
+                                for (let i = 0; i < len; i++) {
+                                    const object = _resp['objects'][i];
                                     if ('type' in object
                                           && object['type'] === 'article') {
                                         articles.push(object);
                                     }
                                 }
                                 if (articles.length > 0) {
-                                    var article = articles[0];
+                                    const article = articles[0];
                                     // send to content.js for caching
                                     sendMsg('cacheDiffbot', article);
                                     showFn = showDiffbot(article);
@@ -476,9 +476,9 @@ var recrun = function(article, baseURI) {
 };
 
 // same domain, protocol, and port for two URLs?
-var dppMatch = function(u1, u2) {
-    U1 = new URL(u1);
-    U2 = new URL(u2);
+const dppMatch = function(u1, u2) {
+    const U1 = new URL(u1);
+    const U2 = new URL(u2);
     return (U1.port === U2.port
             && U1.protocol === U2.protocol
             && U1.host === U2.host);
@@ -502,13 +502,13 @@ document.getElementById('recrun-close').onclick = function() {
     recrunClose();
 };
 
-var keydownScroll = function(key) {
-    var scrollElt = document.getElementById('scroll');
-    var n = 40;
-    var h = scrollElt.clientHeight * 0.85;
+const keydownScroll = function(key) {
+    const scrollElt = document.getElementById('scroll');
+    const n = 40;
+    const h = scrollElt.clientHeight * 0.85;
 
-    var x = 0;
-    var y = 0;
+    let x = 0;
+    let y = 0;
 
     if (key === 'ArrowLeft') {
         x = -1 * n;
@@ -534,17 +534,17 @@ var keydownScroll = function(key) {
     scrollElt.scrollTop += y;
 };
 
-var receiveMessage = function(event) {
-    var method = event.data['method'];
-    var data = event.data['data'];
+const receiveMessage = function(event) {
+    const method = event.data['method'];
+    const data = event.data['data'];
     if (dppMatch(lastUrl, event.origin)) {
         if (method === 'recrun') {
             lastUrl = data['url'];
-            var article = null;
+            let article = null;
             if ('article' in data && data['article']) {
                 article = data['article'];
             }
-            var baseURI = data['baseURI'];
+            const baseURI = data['baseURI'];
             recrun(article, baseURI);
         } else if (method === 'updateOptions') {
             // reset saved state, so the next call will re-fetch

@@ -1,5 +1,5 @@
-var options = null;
-var updateOptions = function(opts) {
+let options = null;
+const updateOptions = function(opts) {
     options = opts;
     // notify iframe.js
     if (iframe && iframe.contentWindow) {
@@ -7,11 +7,10 @@ var updateOptions = function(opts) {
     }
 };
 chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
-    var opts = response;
-    updateOptions(opts);
+    updateOptions(response);
 });
 chrome.runtime.onMessage.addListener(function(request) {
-    var method = request.method;
+    const method = request.method;
     if (method === 'updateOptions') {
         updateOptions(request.data);
         // clear Diffbot cache
@@ -22,10 +21,10 @@ chrome.runtime.onMessage.addListener(function(request) {
 // create a unique id that won't clash with any other ids on the page.
 // doesn't have to be static since we don't refer to the id statically
 // (no references in css, etc.).
-var createUniqueId = function() {
-    var tries = 0;
+const createUniqueId = function() {
+    let tries = 0;
     while (tries < 20) {
-        var curId = '_' + Math.random().toString(36).substr(2, 9);
+        const curId = '_' + Math.random().toString(36).substr(2, 9);
         if (!document.getElementById(curId)) {
             return curId;
         }
@@ -34,15 +33,15 @@ var createUniqueId = function() {
     return null;
 };
 
-var setPropertyImp = function(element, key, val) {
+const setPropertyImp = function(element, key, val) {
     // have to use setProperty for setting !important.
     // This doesn't work: span.style.backgroundColor = 'yellow !important';
     element.style.setProperty(key, val, 'important');
 };
 
-var iframe = document.createElement('iframe');
-var src = 'src/iframe.html';
-var hash = '#' + encodeURIComponent(location.href);
+const iframe = document.createElement('iframe');
+const src = 'src/iframe.html';
+const hash = '#' + encodeURIComponent(location.href);
 iframe.id = createUniqueId();
 iframe.src = chrome.runtime.getURL(src + hash);
 iframe.setAttribute('frameBorder', '0');
@@ -96,9 +95,9 @@ const positionIframe = function() {
 // could remove it when recrun window closed (and then re-insert on subsequent
 // clicks), But recrun'ing the same page multiple times during the same session
 // is cached, within the iframe, so don't remove
-var appendTo = document.documentElement;
+const appendTo = document.documentElement;
 
-var sendMsg = function(method, data) {
+const sendMsg = function(method, data) {
     iframe.contentWindow.postMessage(
         {
             'method': method,
@@ -107,29 +106,29 @@ var sendMsg = function(method, data) {
         (new URL(iframe.src)).origin);
 };
 
-var exists = function() {
+const exists = function() {
     return iframe && appendTo.contains(iframe);
 };
 
-var shown = function() {
+const shown = function() {
     return iframe && iframe.style.display !== 'none';
 };
 
-var registerEvents = function() {
+const registerEvents = function() {
     document.addEventListener('keydown', keyHandler);
 };
 
-var deregisterEvents = function() {
+const deregisterEvents = function() {
     document.removeEventListener('keydown', keyHandler);
 };
 
-var keyHandler = function(e) {
+const keyHandler = function(e) {
     if (!exists() || !shown()) {
         deregisterEvents();
         return true;
     }
     if (e.type !== 'keydown') return true;
-    var s = new Set([
+    const s = new Set([
         'ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown',
         'PageUp', 'PageDown', 'Home', 'End', ' '
     ]);
@@ -142,33 +141,33 @@ var keyHandler = function(e) {
     e.stopPropagation();
 };
 
-var recrunClose = function() {
+const recrunClose = function() {
     deregisterEvents();
     iframe.style.display = 'none';
 };
 
 // store last Diffbot response here
-var cacheDiffbot = null;
+let cacheDiffbot = null;
 
-var recrunOpen = function(retry) {
+const recrunOpen = function(retry) {
     positionIframe();
     if (!retry) {
         registerEvents();
         iframe.style.display = null;
     }
     // could also use url from chrome.runtime's message request.data.url
-    var data = Object(null);
+    const data = Object(null);
 
-    var url = location.href;
+    const url = location.href;
     data['url'] = url;
 
     if (!options.useDiffbot) {
-        var settings = Object(null);
+        const settings = Object(null);
         settings['cleanAttributes'] = false;
-        var readable = new Readability(document, settings, 3);
-        var article = readable.getArticle(false);
+        const readable = new Readability(document, settings, 3);
+        const article = readable.getArticle(false);
 
-        var rArticle = Object(null);
+        const rArticle = Object(null);
         rArticle['text'] = article.getText();
         rArticle['html'] = article.getHTML();
         rArticle['title'] = article.title;
@@ -182,14 +181,14 @@ var recrunOpen = function(retry) {
 };
 
 // todo holds a function to run once ready
-var todo = null;
+let todo = null;
 
 // is iframe ready
 ready = false;
 
-var receiveMessage = function(event) {
-    var method = event.data['method'];
-    var data = event.data['data'];
+const receiveMessage = function(event) {
+    const method = event.data['method'];
+    const data = event.data['data'];
     if (method === 'close') {
         recrunClose();
     } else if (method === 'ready') {
@@ -211,13 +210,13 @@ var receiveMessage = function(event) {
 // background
 window.addEventListener('message', receiveMessage, false);
 
-var compatible = function() {
+const compatible = function() {
     return document.contentType.indexOf('text/html') > -1
 };
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    var method = request.method;
-    var response = {method: method};
+    const method = request.method;
+    const response = {method: method};
     response.success = true;
     if (method === 'recrun') {
         if (!compatible()) {

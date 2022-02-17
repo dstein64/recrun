@@ -1,56 +1,59 @@
+// WARN: For functions that are called from the options page, proper scope is
+// necessary (e.g., using a function declaration beginning with a 'function',
+// or using a function expression beginning with 'var', but not a function
+// expression beginning with 'let' or 'const').
+
 const IS_FIREFOX = chrome.runtime.getURL('').startsWith('moz-extension://');
 
 // if already using Diffbot, make sure new option, useDiffbot, set to true
 // can eventually remove this
 (function() {
-    var opts = localStorage['options'];
+    let opts = localStorage['options'];
     if (opts) {
         opts = JSON.parse(opts);
         if (!('useDiffbot' in opts)) {
-            if (('token' in opts) && opts.token) {
-                opts['useDiffbot'] = true;
-            } else {
-                opts['useDiffbot'] = false;
-            }
+            opts['useDiffbot'] = !!(('token' in opts) && opts.token);
             localStorage['options'] = JSON.stringify(opts);
         }
     }
 })();
 
-var getOptions = function() {
-    var opts = localStorage['options'];
+const getOptions = function() {
+    let opts = localStorage['options'];
     if (opts) {
         opts = JSON.parse(opts);
     }
     return opts;
 };
 
-var getVersion = function() {
+// This is called from options.js (see scope warning above).
+function getVersion() {
     return chrome.runtime.getManifest().version;
-};
+}
 
-var defaultOptions = function() {
-    var options = Object.create(null);
+// This is called from options.js (see scope warning above).
+function defaultOptions() {
+    const options = Object.create(null);
     options['token'] = '';
     options['media'] = true;
     options['comments'] = false;
     options['diffbotHtml'] = false;
     options['useDiffbot'] = false;
     return options;
-};
+}
 
 // set missing options using defaults
 (function() {
-    var opts = getOptions();
+    let opts = getOptions();
     if (!opts) {
         opts = Object.create(null);
     }
 
-    var defaults = defaultOptions();
+    const defaults = defaultOptions();
 
-    var keys = Object.keys(defaults);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
+    const keys = Object.keys(defaults);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         if (!(key in opts)) {
             opts[key] = defaults[key];
         }
@@ -59,9 +62,9 @@ var defaultOptions = function() {
     localStorage['options'] = JSON.stringify(opts);
 })();
 
-var inject = function(callback=function() {}, scripts=[]) {
+const inject = function(callback=function() {}, scripts=[]) {
     let fn = callback;
-    for (var i = scripts.length - 1; i >= 0; --i) {
+    for (let i = scripts.length - 1; i >= 0; --i) {
         let script = scripts[i];
         let fn_ = fn;
         fn = function() {
@@ -74,8 +77,8 @@ var inject = function(callback=function() {}, scripts=[]) {
 };
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-    var showError = function() {
-        var errorMessage = 'recrun couldn\'t run on this page.';
+    const showError = function() {
+        const errorMessage = 'recrun couldn\'t run on this page.';
         // alert() doesn't work from Firefox background pages. A try/catch block is
         // not sufficient to prevent the "Browser Console" window that pops up with
         // the following message when using alert():
@@ -84,7 +87,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
         if (!IS_FIREFOX)
             alert(errorMessage);
     };
-    var recrun = function() {
+    const recrun = function() {
         chrome.tabs.sendMessage(
             tab.id,
             {method: 'recrun', data: {url: tab.url}},
@@ -125,7 +128,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    var method = request.method;
+    const method = request.method;
     if (method === 'getOptions') {
         sendResponse(getOptions());
     } else if (method === 'disable') {

@@ -1,27 +1,26 @@
-var curTimer = null;
-var statusMessage = function(message, time) {
+let curTimer = null;
+const statusMessage = function(message, time) {
     time = (typeof time === 'undefined') ? 1500 : time;
-    var element = document.getElementById('status');
+    const element = document.getElementById('status');
     if (curTimer)
         clearTimeout(curTimer);
     element.innerText = message;
-    var timer = setTimeout(function() {
+    curTimer = setTimeout(function () {
         element.innerText = '';
         curTimer = null;
     }, time);
-    curTimer = timer;
 };
 
-var backgroundPage = chrome.extension.getBackgroundPage();
+const backgroundPage = chrome.extension.getBackgroundPage();
 
-var useDiffbot = document.getElementById('useDiffbot-checkbox');
+const useDiffbot = document.getElementById('useDiffbot-checkbox');
 
 // enable Diffbot settings when 'Use Diffbot' is selected
 // disable Diffbot settings otherwise
-var diffbotToggle = function() {
-    var diffbotSettings = document.getElementById('diffbot-settings');
-    var tokenInput = document.getElementById('token');
-    var diffbotHtmlCheckbox = document.getElementById('diffbotHtml-checkbox');
+const diffbotToggle = function() {
+    const diffbotSettings = document.getElementById('diffbot-settings');
+    const tokenInput = document.getElementById('token');
+    const diffbotHtmlCheckbox = document.getElementById('diffbotHtml-checkbox');
     if (useDiffbot.checked) {
         diffbotSettings.classList.remove('disabled');
         tokenInput.disabled = false;
@@ -38,17 +37,17 @@ var diffbotToggle = function() {
 
 useDiffbot.addEventListener('change', diffbotToggle);
 
-var checkboxes = ['media', 'diffbotHtml', 'useDiffbot'];
+const checkboxes = ['media', 'diffbotHtml', 'useDiffbot'];
 
-var saveOptions = function() {
-    var options = Object.create(null);
+const saveOptions = function() {
+    const options = Object.create(null);
 
-    var tokenInput = document.getElementById('token').value;
+    const tokenInput = document.getElementById('token').value;
     // trim since Diffbot tokens don't have spaces on the edge
     options['token'] = tokenInput.trim();
 
-    for (var i = 0; i < checkboxes.length; i++) {
-        var checkbox = checkboxes[i];
+    for (let i = 0; i < checkboxes.length; i++) {
+        const checkbox = checkboxes[i];
         options[checkbox] = document.getElementById(checkbox + '-checkbox').checked;
     }
 
@@ -56,8 +55,8 @@ var saveOptions = function() {
 
     // also let all tabs know of the new token
     chrome.tabs.query({}, function(tabs) {
-        for (var i = 0; i < tabs.length; i++) {
-            var tab = tabs[i];
+        for (let i = 0; i < tabs.length; i++) {
+            const tab = tabs[i];
             chrome.tabs.sendMessage(
                 tab.id,
                 {method: 'updateOptions', data: options},
@@ -72,14 +71,14 @@ var saveOptions = function() {
     });
 };
 
-var loadOptions = function(opts) {
-    var token = opts['token'];
-    var tokenInput = document.getElementById('token');
+const loadOptions = function(opts) {
+    const token = opts['token'];
+    const tokenInput = document.getElementById('token');
     tokenInput.value = token;
 
-    for (var i = 0; i < checkboxes.length; i++) {
-        var checkbox = checkboxes[i];
-        var e = document.getElementById(checkbox + '-checkbox');
+    for (let i = 0; i < checkboxes.length; i++) {
+        const checkbox = checkboxes[i];
+        const e = document.getElementById(checkbox + '-checkbox');
         e.checked = opts[checkbox];
     }
 
@@ -92,7 +91,7 @@ var loadOptions = function(opts) {
     saveOptions();
 };
 
-var initOpts = JSON.parse(localStorage['options']);
+const initOpts = JSON.parse(localStorage['options']);
 
 // restore saved options
 document.addEventListener('DOMContentLoaded', function() {
@@ -101,16 +100,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // load default options
 document.getElementById('defaults').addEventListener('click', function() {
-    var defaults = backgroundPage.defaultOptions();
+    const defaults = backgroundPage.defaultOptions();
     loadOptions(defaults);
     statusMessage('Defaults Loaded', 1200);
 });
 
 // save options on any user input
 (function() {
-    var inputs = document.getElementsByTagName('input');
-    for (var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
+    const inputs = document.getElementsByTagName('input');
+    for (let i = 0; i < inputs.length; i++) {
+        const input = inputs[i];
         // could handle each type separately to avoid multiple handlings
         // a text box will be handled by oninput on each character and onchange
         // when removing focus.
