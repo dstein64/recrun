@@ -76,8 +76,7 @@ const loadOptions = function(opts) {
     const tokenInput = document.getElementById('token');
     tokenInput.value = token;
 
-    for (let i = 0; i < checkboxes.length; i++) {
-        const checkbox = checkboxes[i];
+    for (const checkbox of checkboxes) {
         const e = document.getElementById(checkbox + '-checkbox');
         e.checked = opts[checkbox];
     }
@@ -108,8 +107,7 @@ document.getElementById('defaults').addEventListener('click', function() {
 // save options on any user input
 (function() {
     const inputs = document.getElementsByTagName('input');
-    for (let i = 0; i < inputs.length; i++) {
-        const input = inputs[i];
+    for (const input of inputs) {
         // could handle each type separately to avoid multiple handlings
         // a text box will be handled by oninput on each character and onchange
         // when removing focus.
@@ -123,8 +121,8 @@ document.getElementById('defaults').addEventListener('click', function() {
 (function() {
     if (window.matchMedia('(pointer: coarse)').matches) {
         let labels = document.getElementsByClassName('mobile-remove-for');
-        for (let i = 0; i < labels.length; ++i) {
-            labels[i].removeAttribute('for');
+        for (const label of labels) {
+            label.removeAttribute('for');
         }
     }
 })();

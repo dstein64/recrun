@@ -29,12 +29,10 @@ const recrunShow = function(id) {
 const recrunShowOnly = function(ids) {
     let container = getRecrunElementById('recrun-container');
     let children = container.children;
-    for (let i = 0; i < children.length; i++) {
-        const child = children[i];
+    for (const child of children) {
         child.style.display = 'none';
     }
-    for (let i = 0; i < ids.length; i++) {
-        let id = ids[i];
+    for (const id of ids) {
         recrunShow(id);
     }
 };
@@ -110,9 +108,7 @@ const sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseU
             if (allowedTags.has(tagLower)) {
                 const newElement = doc.createElement(tag);
 
-                const attrs = n.attributes;
-                for (let i = 0; i < attrs.length; i++) {
-                    const attr = attrs[i];
+                for (const attr of n.attributes) {
                     const attrNameLower = attr.name.toLowerCase();
                     if (allowedAttrs.has(tagLower)
                           && allowedAttrs.get(tagLower).has(attrNameLower)) {
@@ -198,17 +194,13 @@ const sanitize = function(htmlString, rootNode, allowedTags, allowedAttrs, baseU
                 nextRecrunNode = newElement;
             }
 
-            const _children = n.childNodes;
-            for (let i = 0; i < _children.length; i++) {
-                const _child = _children[i];
+            for (const _child of n.childNodes) {
                 rec(_child, nextRecrunNode);
             }
 
         }
     };
-    const children = htmldoc.body.childNodes;
-    for (let i = 0; i < children.length; i++) {
-        const child = children[i];
+    for (const child of htmldoc.body.childNodes) {
         rec(child, rootNode);
     }
 };
@@ -254,9 +246,7 @@ const getElements = function(frag, fn) {
         if (fn(n)) {
             l.push(n);
         }
-        const children = n.children;
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
+        for (const child of n.children) {
             rec(child);
         }
     };
@@ -267,8 +257,7 @@ const getElements = function(frag, fn) {
 // an aricle object has title, author, date, etc.
 const fillOverlay = function(article, baseURI) {
     const fields = ['title', 'author', 'date'];
-    for (let i = 0; i < fields.length; i++) {
-        const field = fields[i];
+    for (const field of fields) {
         const e = getRecrunElementById('recrun-' + field);
         if (field in article && e) {
             e.appendChild(document.createTextNode(article[field]));
@@ -317,8 +306,7 @@ const fillOverlay = function(article, baseURI) {
             return (n.nodeType === Node.ELEMENT_NODE) && (n.tagName === 'IMG');
         };
         const imgs = getElements(contentFrag, isImg);
-        for (let i = 0; i < imgs.length; i++) {
-            const img = imgs[i];
+        for (const img of imgs) {
             if (!descendantOfTag(img, 'FIGURE', 10)
                     && !descendantOfTag(img, 'A', 10)) {
                 const figure = contentFrag.ownerDocument.createElement('figure');
@@ -341,9 +329,7 @@ const fillOverlay = function(article, baseURI) {
             // create recrun content from Diffbot's text field
             // starting with one primary
             if (options.media && 'images' in article) {
-                const images = article['images'];
-                for (let i = 0; i < images.length; i++) {
-                    const image = images[i];
+                for (const image of article['images']) {
                     if ('primary' in image
                             && image['primary'] === true
                             && 'url' in image
@@ -359,8 +345,7 @@ const fillOverlay = function(article, baseURI) {
 
             const text = article['text'];
             const paragraphs = text.split(/\n/g);
-            for (let i = 0; i < paragraphs.length; i++) {
-                const p = document.createElement('p');
+            for (const p of paragraphs) {
                 p.appendChild(document.createTextNode(paragraphs[i]));
                 contentFrag.appendChild(p);
             }
@@ -381,8 +366,7 @@ const recrunClose = function() {
 // reset recrun content to default
 const reset = function() {
     const ids = ['recrun-title', 'recrun-author', 'recrun-date', 'recrun-html'];
-    for (let i = 0; i < ids.length; i++) {
-        const cur = ids[i];
+    for (const cur of ids) {
         const element = document.getElementById(cur);
         while (element.firstChild) {
             element.removeChild(element.lastChild);
@@ -444,9 +428,7 @@ const recrun = function(article, baseURI) {
                                     && 'objects' in _resp
                                     && _resp['objects'].length > 0) {
                                 const articles = [];
-                                const len = _resp['objects'].length;
-                                for (let i = 0; i < len; i++) {
-                                    const object = _resp['objects'][i];
+                                for (const object of _resp['objects']) {
                                     if ('type' in object
                                           && object['type'] === 'article') {
                                         articles.push(object);
