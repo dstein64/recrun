@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>recrun Extension Options</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 #diffbot-settings.disabled, #diffbot-settings.disabled * {
     color: rgb(204, 204, 204);
@@ -24,9 +25,12 @@ a.tooltip:hover { text-decoration: none; }
 a.tooltip span {
     z-index: 10;
     display: none;
+    position: absolute;
+    left: 0;
     padding: 14px 20px;
-    margin-top: -30px;
+    margin-top: 30px;
     margin-left: 14px;
+    margin-right: 14px;
     width: auto;
     max-width: 300px;
     line-height: 16px;
@@ -41,6 +45,10 @@ a.tooltip:hover span {
 a.tooltip span {
     border-radius:4px;
     box-shadow: 5px 5px 8px #CCC;
+}
+a.tooltip.top span {
+    margin-top: -10px;
+    transform: translateY(-100%);
 }
 
 /*
@@ -72,11 +80,11 @@ a.tooltip span {
 </label>
 <div id="diffbot-settings">
     <br>
-    Diffbot Token: <input id="token" type="text" name="token" size="35">
+    Diffbot Token: <input id="token" type="text" name="token" size="35" style="max-width: 100%">
     <br><br>
     <input class="checkboxes" type="checkbox" id="diffbotHtml-checkbox">
     <label for="diffbotHtml-checkbox" class="mobile-remove-for">
-        <a class="tooltip">Diffbot <i>html</i><span>When enabled, content is
+        <a class="tooltip top">Diffbot <i>html</i><span>When enabled, content is
         from Diffbot's <i>html</i> field.</span></a>
     </label>
 </div><!-- #diffbot-settings -->
