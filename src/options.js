@@ -120,9 +120,10 @@ document.getElementById('defaults').addEventListener('click', function() {
 // decouple label for touch devices, since clicking shows the tooltip.
 (function() {
     if (window.matchMedia('(pointer: coarse)').matches) {
-        let labels = document.getElementsByClassName('mobile-remove-for');
+        let labels = document.getElementsByTagName('label');
         for (const label of labels) {
-            label.removeAttribute('for');
+            if (label.querySelector('.tooltip'))
+                label.removeAttribute('for');
         }
     }
 })();
