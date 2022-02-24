@@ -5,27 +5,6 @@
 
 const IS_FIREFOX = chrome.runtime.getURL('').startsWith('moz-extension://');
 
-// if already using Diffbot, make sure new option, useDiffbot, set to true
-// can eventually remove this
-(function() {
-    let opts = localStorage['options'];
-    if (opts) {
-        opts = JSON.parse(opts);
-        if (!('useDiffbot' in opts)) {
-            opts['useDiffbot'] = !!(('token' in opts) && opts.token);
-            localStorage['options'] = JSON.stringify(opts);
-        }
-    }
-})();
-
-const getOptions = function() {
-    let opts = localStorage['options'];
-    if (opts) {
-        opts = JSON.parse(opts);
-    }
-    return opts;
-};
-
 // This is called from options.js (see scope warning above).
 function getVersion() {
     return chrome.runtime.getManifest().version;
@@ -42,23 +21,35 @@ function defaultOptions() {
     return options;
 }
 
-// set missing options using defaults
-(function() {
-    let opts = getOptions();
-    if (!opts) {
-        opts = Object.create(null);
-    }
+// Set missing options using defaults.
+const normalizeOptions = function() {
+    chrome.storage.local.get({options: {}}, function(result) {
+        let opts = result.options;
+        const defaults = defaultOptions();
 
-    const defaults = defaultOptions();
-
-    const keys = Object.keys(defaults);
-    for (const key of keys) {
-        if (!(key in opts)) {
-            opts[key] = defaults[key];
+        const keys = Object.keys(defaults);
+        for (const key of keys) {
+            if (!(key in opts)) {
+                opts[key] = defaults[key];
+            }
         }
-    }
+        chrome.storage.local.set({options: opts});
+    });
+};
 
-    localStorage['options'] = JSON.stringify(opts);
+(function() {
+    if ('options' in localStorage) {
+        // If there are localStorage options, transfer them to chrome.storage.local.
+        // TODO: This can eventually be removed, at which point the normalizeOptions()
+        // function should be deleted, and its code moved here.
+        let opts = localStorage['options'];
+        localStorage.clear();
+        chrome.storage.local.set({options: JSON.parse(opts)}, function() {
+            normalizeOptions();
+        });
+    } else {
+        normalizeOptions();
+    }
 })();
 
 const inject = function(callback=function() {}, scripts=[]) {
@@ -124,15 +115,4 @@ chrome.browserAction.onClicked.addListener(function(tab) {
                     inject(recrun, scripts);
                 });
         });
-});
-
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    const method = request.method;
-    if (method === 'getOptions') {
-        sendResponse(getOptions());
-    } else if (method === 'disable') {
-        chrome.browserAction.disable(sender.tab.id);
-    } else {
-        sendResponse({});
-    }
 });

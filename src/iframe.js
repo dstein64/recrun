@@ -542,8 +542,8 @@ const receiveMessage = function(event) {
 window.addEventListener('message', receiveMessage, false);
 
 document.addEventListener('DOMContentLoaded', function(event) {
-    chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
-        options = response;
+    chrome.storage.local.get(['options'], function(result) {
+        options = result.options;
         sendMsg('ready', null);
     });
 });

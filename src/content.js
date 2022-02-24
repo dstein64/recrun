@@ -6,17 +6,6 @@ const updateOptions = function(opts) {
         sendMsg('updateOptions', options);
     }
 };
-chrome.runtime.sendMessage({method: 'getOptions'}, function(response) {
-    updateOptions(response);
-});
-chrome.runtime.onMessage.addListener(function(request) {
-    const method = request.method;
-    if (method === 'updateOptions') {
-        updateOptions(request.data);
-        // clear Diffbot cache
-        cacheDiffbot = null;
-    }
-});
 
 // create a unique id that won't clash with any other ids on the page.
 // doesn't have to be static since we don't refer to the id statically
@@ -222,17 +211,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (!compatible()) {
             response.success = false;
         } else if (!shown()) {
-            todo = function () {
-                recrunOpen(false);
-            };
-            appendTo.appendChild(iframe);
+            chrome.storage.local.get(['options'], function(result) {
+                if (JSON.stringify(options) !== JSON.stringify(result.options)) {
+                    // clear Diffbot cache
+                    cacheDiffbot = null;
+                }
+                updateOptions(result.options);
+                todo = function () {
+                    recrunOpen(false);
+                };
+                appendTo.appendChild(iframe);
+            });
         } else {
             recrunClose();
         }
     } else if (method === 'ping') {
         response.success = true;
     }
-    // sending a respnse prevents chrome.runtime.lastError from firing for
+    // sending a response prevents chrome.runtime.lastError from firing for
     // no response.
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=586155
     // alternatively, could return true from this function.

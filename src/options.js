@@ -51,24 +51,7 @@ const saveOptions = function() {
         options[checkbox] = document.getElementById(checkbox + '-checkbox').checked;
     }
 
-    localStorage['options'] = JSON.stringify(options);
-
-    // also let all tabs know of the new token
-    chrome.tabs.query({}, function(tabs) {
-        for (let i = 0; i < tabs.length; i++) {
-            const tab = tabs[i];
-            chrome.tabs.sendMessage(
-                tab.id,
-                {method: 'updateOptions', data: options},
-                function(resp) {
-                    // Check for lastError, to avoid:
-                    //   'Unchecked lastError value: Error: Could not establish connection.
-                    //   Receiving end does not exist.'
-                    // Which would occur for tabs without the content script injected.
-                    if (chrome.runtime.lastError) {}
-                });
-        }
-    });
+    chrome.storage.local.set({options: options});
 };
 
 const loadOptions = function(opts) {
@@ -90,18 +73,25 @@ const loadOptions = function(opts) {
     saveOptions();
 };
 
-const initOpts = JSON.parse(localStorage['options']);
-
 // restore saved options
 document.addEventListener('DOMContentLoaded', function() {
-    loadOptions(initOpts);
-});
+    chrome.storage.local.get(['options'], function(result) {
+        const initOpts = result.options;
+        // Restore saved options.
+        loadOptions(initOpts);
 
-// load default options
-document.getElementById('defaults').addEventListener('click', function() {
-    const defaults = backgroundPage.defaultOptions();
-    loadOptions(defaults);
-    statusMessage('Defaults Loaded', 1200);
+        // Load default options.
+        document.getElementById('defaults').addEventListener('click', function() {
+            const defaults = backgroundPage.defaultOptions();
+            loadOptions(defaults);
+            statusMessage('Defaults Loaded', 1200);
+        });
+
+        document.getElementById('revert').addEventListener('click', function() {
+            loadOptions(initOpts);
+            statusMessage('Options Reverted', 1200);
+        });
+    });
 });
 
 // save options on any user input
@@ -127,11 +117,6 @@ document.getElementById('defaults').addEventListener('click', function() {
         }
     }
 })();
-
-document.getElementById('revert').addEventListener('click', function() {
-    loadOptions(initOpts);
-    statusMessage('Options Reverted', 1200);
-});
 
 // version
 document.getElementById('version').innerText = backgroundPage.getVersion();

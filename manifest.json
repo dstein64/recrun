@@ -1,12 +1,12 @@
 {
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   "options_ui": {
     "page": "src/options.html"
   },
   "description": "Retain essential content, remove unwanted noise.",
   "manifest_version": 2,
   "name": "recrun",
-  "version": "3.4.3",
+  "version": "3.4.4",
   "browser_action": {
     "default_icon": "icons/icon38.png"
   },
