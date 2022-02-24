@@ -75,3 +75,10 @@ chrome.action.onClicked.addListener(function(tab) {
             });
     });
 });
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    const method = request.method;
+    if (method === 'getDefaultOptions') {
+        sendResponse(defaultOptions());
+    }
+});
