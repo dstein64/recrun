@@ -6,7 +6,7 @@
   "description": "Retain essential content, remove unwanted noise.",
   "manifest_version": 3,
   "name": "recrun",
-  "version": "3.4.4",
+  "version": "3.4.5",
   "action": {
     "default_icon": "icons/icon38.png"
   },

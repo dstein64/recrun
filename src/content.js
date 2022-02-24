@@ -212,6 +212,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             response.success = false;
         } else if (!shown()) {
             chrome.storage.local.get(['options'], function(result) {
+                if (!result.options) return;
                 if (JSON.stringify(options) !== JSON.stringify(result.options)) {
                     // clear Diffbot cache
                     cacheDiffbot = null;
