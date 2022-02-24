@@ -119,4 +119,4 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 
 // version
-document.getElementById('version').innerText = backgroundPage.getVersion();
+document.getElementById('version').innerText = chrome.runtime.getManifest().version;
