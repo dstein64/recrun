@@ -57,9 +57,6 @@ const positionIframe = function() {
 
     // On mobile, account for viewport scaling on 1) pages that aren't mobile-friendly
     // (e.g., pages without a <meta name="viewport" ...> tag, or 2) pages that are zoomed.
-    // As of 2020/06/03, window.visualViewport is available on Chrome and Firefox
-    // for Android (although not available for desktop Firefox without manually turning
-    // it on in about:config, even when using responsive design mode).
     if (window.visualViewport !== undefined) {
         const viewportWidth = window.visualViewport.width;
         const viewportHeight = window.visualViewport.height;
@@ -71,7 +68,7 @@ const positionIframe = function() {
         if (viewportScale !== 1 || viewportOffsetLeft !== 0 || viewportOffsetTop !== 0) {
             let transform = 'translateX(' + viewportOffsetLeft + 'px)';
             transform += ' translateY(' + viewportOffsetTop + 'px)';
-            transform += ' scale(' + (1 / viewportScale) + ')'
+            transform += ' scale(' + (1 / viewportScale) + ')';
             setPropertyImp(iframe, 'width', viewportWidth * viewportScale + 'px');
             setPropertyImp(iframe, 'height', viewportHeight * viewportScale + 'px');
             setPropertyImp(iframe, 'transform-origin', 'top left');
