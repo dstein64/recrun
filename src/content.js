@@ -71,7 +71,7 @@ const positionIframe = function() {
         if (viewportScale !== 1 || viewportOffsetLeft !== 0 || viewportOffsetTop !== 0) {
             let transform = 'translateX(' + viewportOffsetLeft + 'px)';
             transform += ' translateY(' + viewportOffsetTop + 'px)';
-            transform += ' scale(' + (1 / viewportScale) + ')'
+            transform += ' scale(' + (1 / viewportScale) + ')';
             setPropertyImp(iframe, 'width', viewportWidth * viewportScale + 'px');
             setPropertyImp(iframe, 'height', viewportHeight * viewportScale + 'px');
             setPropertyImp(iframe, 'transform-origin', 'top left');
