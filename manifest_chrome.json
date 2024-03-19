@@ -17,7 +17,7 @@
     "page": "src/options.html"
   },
   "permissions": ["activeTab", "scripting", "storage"],
-  "version": "3.4.5",
+  "version": "3.5.0",
   "web_accessible_resources": [
     {
       "matches": ["<all_urls>"],
