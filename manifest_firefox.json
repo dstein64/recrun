@@ -1,0 +1,38 @@
+{
+  "action": {
+    "default_icon": "icons/icon38.png"
+  },
+  "background": {
+    "scripts": ["src/background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ae016343-4621-41f9-824f-efbe9afa931d}"
+    }
+  },
+  "description": "Retain essential content, remove unwanted noise.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "manifest_version": 3,
+  "name": "recrun",
+  "options_ui": {
+    "page": "src/options.html"
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "version": "3.5.0",
+  "web_accessible_resources": [
+    {
+      "matches": ["<all_urls>"],
+      "resources": [
+        "src/loader.gif",
+        "src/style.css",
+        "src/options.html",
+        "src/iframe.html",
+        "src/content.html"
+      ]
+    }
+  ]
+}

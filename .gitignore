@@ -1,5 +1,5 @@
-/archive.zip
-/.idea
-/.project
-/.settings
 .DS_Store
+Thumbs.db
+/archive_chrome.zip
+/archive_firefox.zip
+/manifest.json

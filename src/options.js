@@ -11,8 +11,6 @@ const statusMessage = function(message, time) {
     }, time);
 };
 
-const backgroundPage = chrome.extension.getBackgroundPage();
-
 const useDiffbot = document.getElementById('useDiffbot-checkbox');
 
 // enable Diffbot settings when 'Use Diffbot' is selected
@@ -82,9 +80,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load default options.
         document.getElementById('defaults').addEventListener('click', function() {
-            const defaults = backgroundPage.defaultOptions();
-            loadOptions(defaults);
-            statusMessage('Defaults Loaded', 1200);
+            chrome.runtime.sendMessage({method: 'getDefaultOptions'}, (response) => {
+                loadOptions(response);
+                statusMessage('Defaults Loaded', 1200);
+            });
         });
 
         document.getElementById('revert').addEventListener('click', function() {
@@ -119,4 +118,4 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 
 // version
-document.getElementById('version').innerText = backgroundPage.getVersion();
+document.getElementById('version').innerText = chrome.runtime.getManifest().version;
